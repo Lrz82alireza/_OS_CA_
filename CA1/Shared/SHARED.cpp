@@ -1,5 +1,5 @@
 // SHARED.cpp
-#include "SHARED.h"
+#include "SHARED.hpp"
 #include <unistd.h>
 #include <sstream>
 #include <string.h>

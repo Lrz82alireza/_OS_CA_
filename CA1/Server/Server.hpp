@@ -46,39 +46,48 @@ private:
     // تابع برای دریافت اطلاعات از کلاینت
     bool receiveClientInfo(int client_fd, Client_info &new_client);
 
+    // _____________ توابع کمکی _____________
+    void prepareFdSetForServer(fd_set& read_fds, int& max_fd);
+    void handleNewConnections(fd_set& read_fds);
+    void handleClientMessages(fd_set& read_fds);
+    void handleUdpBroadcast(fd_set& read_fds);
+    void handleKeyboardInput(fd_set &read_fds);
+
     // _____________ Check Client Info _____________
     int HasUniqueUsername(Client_info new_client);
     int HasValidRole(Client_info new_client);
     int checkClientInfo(Client_info new_client);
     // _____________ Check Client Info _____________
 
-    // addNewClient function
-    // handle new client functoin
+    int addNewClient(Client_info new_client);
+    void handleNewClient(int server_fd);
 public:
     Server(int port) : stp_port(port), server_fd(-1) {}
-    ~Server();
+    ~Server() {}
+
+    void startServer();
 
     void start() {
-        // // ایجاد سوکت TCP (سرور)
-        // server_fd = create_socket(false, false);
-        // bind_socket(server_fd, stp_port, false);
-        // if (listen(server_fd, 5) < 0) {
-        //     my_print("listen failed\n");
-        //     exit(EXIT_FAILURE);
-        // }
+        // ایجاد سوکت TCP (سرور)
+        server_fd = create_socket(false, false);
+        bind_socket(server_fd, stp_port, false);
+        if (listen(server_fd, 5) < 0) {
+            my_print("listen failed\n");
+            exit(EXIT_FAILURE);
+        }
     
-        // // ایجاد سوکت UDP فقط برای ارسال Broadcast
-        // udp_socket = create_socket(true, true);
+        // ایجاد سوکت UDP فقط برای ارسال Broadcast
+        udp_socket = create_socket(true, true);
     
-        // my_print("Server listening on port ");
-        // my_print(std::to_string(stp_port).c_str());
-        // my_print("\n");
+        my_print("Server listening on port ");
+        my_print(std::to_string(stp_port).c_str());
+        my_print("\n");
     
-        // // راه‌اندازی پردازش TCP و UDP
-        // startServer();
+        // راه‌اندازی پردازش TCP و UDP
+        startServer();
     }
 };
 
 
 
-#endif // GAME_MANAGER_H
+#endif // SERVER_HPP
