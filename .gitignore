@@ -1,0 +1,21 @@
+# Ignore compiled binaries
+SHARED.o
+
+# Ignore object files
+*.o
+
+# Ignore debug files
+*.out
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Ignore editor/IDE specific files
+.vscode/
+*.code-workspace
+*.idea/
+*.DS_Store
+
+# Ignore tmux session files
+.tmux.conf
