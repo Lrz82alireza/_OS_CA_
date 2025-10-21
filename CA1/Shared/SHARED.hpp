@@ -31,10 +31,10 @@
 
 struct Client_info {
     char username[50];
+    char password[50];
     char role[20];
     int port;
     int client_fd;
-    bool has_teammate = false;
 };
 
 struct State
@@ -49,7 +49,6 @@ struct Submission
     char problem_id[20] = "";
     char code[2000] = "";
 };
-
 
 struct Team
 {

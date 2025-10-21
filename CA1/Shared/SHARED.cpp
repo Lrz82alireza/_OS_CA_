@@ -247,21 +247,21 @@ void closeClientConnection(std::set<int> assigned_ports, int client_fd, int port
     close(client_fd);
 }
 
-Client_info * handleClientReconnection(std::vector<Team *> &teams, std::vector<Client_info *> &clients, Client_info *client)
-{
-    Team *team = findTeamByClientName(teams, client->username);
-    Client_info *partner = findPartnerInTeam(team, client->username);
-    if (partner != nullptr) {
-        std::string msg = "Your teammate reconnected.\n";
-        send(partner->client_fd, msg.c_str(), strlen(msg.c_str()), 0);
-    }
+// Client_info * handleClientReconnection(std::vector<Team *> &teams, std::vector<Client_info *> &clients, Client_info *client)
+// {
+//     Team *team = findTeamByClientName(teams, client->username);
+//     Client_info *partner = findPartnerInTeam(team, client->username);
+//     if (partner != nullptr) {
+//         std::string msg = "Your teammate reconnected.\n";
+//         send(partner->client_fd, msg.c_str(), strlen(msg.c_str()), 0);
+//     }
 
-    client->has_teammate = true;
-    if (strcmp(team->coder->username, client->username) == 0) {
-        team->coder = client;
-    } else {
-        team->navigator = client;
-    }
+//     client->has_teammate = true;
+//     if (strcmp(team->coder->username, client->username) == 0) {
+//         team->coder = client;
+//     } else {
+//         team->navigator = client;
+//     }
 
-    return client;
-}
+//     return client;
+// }

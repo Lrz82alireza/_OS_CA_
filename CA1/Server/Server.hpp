@@ -2,12 +2,15 @@
 #define SERVER_HPP
 
 #include "SHARED.hpp"
-
+#include "SeatMap.hpp"
 
 #define UDP_PORT 8081
 
 #define ERR_USERNAME_STR "ERR: Username already exists."
 #define ERR_ROLE_STR "ERR: Invalid role."
+
+#define SEATS_COLUMN_MAX_SIZE 26
+#define SEATS_ROW_MAX_SIZE 100
 
 #define START_STR "start"
 
