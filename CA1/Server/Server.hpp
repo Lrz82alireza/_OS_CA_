@@ -6,6 +6,8 @@
 
 #define UDP_PORT_AIRLINE 8081
 #define UDP_PORT_COSTUMER 8082
+#define ROLE_AIRLINE 1
+#define ROLE_COSTUMER 2
 
 #define ERR_USERNAME_STR "ERR: Username already exists."
 #define ERR_ROLE_STR "ERR: Invalid role."

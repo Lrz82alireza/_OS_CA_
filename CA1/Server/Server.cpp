@@ -260,7 +260,6 @@ void Server::handleKeyboardInput(fd_set& read_fds) {
             // پردازش ورودی
             if (strcmp(buffer, "start\n") == 0) {
                 // startGame();
-                printf("\n-----------hmmmmm-------------\n");
                 handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr);
                 handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr);
                 return;

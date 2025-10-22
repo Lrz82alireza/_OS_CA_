@@ -3,6 +3,8 @@
 #ifndef SHARED_HPP
 #define SHARED_HPP
 
+#include "Client_info.hpp"
+
 #include <string>
 #include <sstream>
 #include <cstdlib>
@@ -29,13 +31,7 @@
 #define SUBMIT_N 3
 #define SAVE_N 4
 
-struct Client_info {
-    char username[50];
-    char password[50];
-    char role[20];
-    int port;
-    int client_fd;
-};
+
 
 struct State
 {
