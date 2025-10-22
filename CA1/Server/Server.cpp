@@ -225,8 +225,8 @@ void Server::handleClientMessages(fd_set& read_fds) {
                 send(client->client_fd, "Received your message", 21, 0);
             
                 // Broadcast پیام از طریق UDP
-                handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr, read_fds);
-                handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr, read_fds);
+                handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr);
+                handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr);
 
                 ++it;
             } else {
@@ -238,13 +238,14 @@ void Server::handleClientMessages(fd_set& read_fds) {
     }
 }
 
-void Server::handleUdpBroadcast(int socket_fd, const sockaddr_in& addr, fd_set& read_fds) {
-    if (FD_ISSET(socket_fd, &read_fds)) {
-        const char* message = "Hello to all clients!";
-        sendto(socket_fd, message, strlen(message), 0,
-               (const sockaddr*)&addr, sizeof(addr));
-    }
+void Server::handleUdpBroadcast(int socket_fd, const sockaddr_in& addr) {
+    const char* message = "Hello to all clients!";
+    int sent = sendto(socket_fd, message, strlen(message), 0,
+                      (const sockaddr*)&addr, sizeof(addr));
+    if (sent < 0)
+        perror("sendto failed");
 }
+
 
 void Server::handleKeyboardInput(fd_set& read_fds) {
     char buffer[1024];
@@ -259,6 +260,9 @@ void Server::handleKeyboardInput(fd_set& read_fds) {
             // پردازش ورودی
             if (strcmp(buffer, "start\n") == 0) {
                 // startGame();
+                printf("\n-----------hmmmmm-------------\n");
+                handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr);
+                handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr);
                 return;
             }
             // if (strcmp(buffer, "team\n") == 0) {
@@ -328,8 +332,8 @@ void Server::startServer() {
         // } else {
             // handleGameMessages(read_fds);
         // }
-        handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr, read_fds);
-        handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr, read_fds);
+        // handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr, read_fds);
+        // handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr, read_fds);
 
     }
 }

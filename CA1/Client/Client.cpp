@@ -90,7 +90,7 @@ void Client::connectToServer() {
     my_print(std::to_string(tcp_sock).c_str());
     my_print("\n");
 
-    
+
     // ارسال اطلاعات کاربر به سرور
     sendUserInfo(tcp_sock, username, role);
     

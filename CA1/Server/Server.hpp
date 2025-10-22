@@ -63,7 +63,7 @@ private:
     void prepareFdSetForServer(fd_set& read_fds, int& max_fd);
     void handleNewConnections(fd_set& read_fds);
     void handleClientMessages(fd_set& read_fds);
-    void Server::handleUdpBroadcast(int socket_fd, const sockaddr_in& addr, fd_set& read_fds);
+    void handleUdpBroadcast(int socket_fd, const sockaddr_in& addr);
     void handleKeyboardInput(fd_set &read_fds);
 
     // _____________ Check Client Info _____________
