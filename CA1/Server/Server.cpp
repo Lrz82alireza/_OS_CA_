@@ -189,9 +189,10 @@ void Server::handleNewClient(int server_fd) {
 
 void Server::prepareFdSetForServer(fd_set& read_fds, int& max_fd) {
     FD_ZERO(&read_fds);
-    FD_SET(server_fd, &read_fds);
-    FD_SET(udp_socket, &read_fds);
-    max_fd = std::max(server_fd, udp_socket);
+    FD_SET(this->server_fd, &read_fds);
+    FD_SET(this->udpSocket.airLine.fd, &read_fds);
+    FD_SET(this->udpSocket.customer.fd, &read_fds);
+    max_fd = std::max(max(server_fd, udpSocket.customer.fd), udpSocket.airLine.fd);
     for (const auto& client : clients) {
         FD_SET(client->client_fd, &read_fds);
         if (client->client_fd > max_fd) max_fd = client->client_fd;
@@ -224,10 +225,9 @@ void Server::handleClientMessages(fd_set& read_fds) {
                 send(client->client_fd, "Received your message", 21, 0);
             
                 // Broadcast پیام از طریق UDP
-                strcpy(buffer, "Hello to all clients!");
-                sendto(udp_socket, buffer, strlen(buffer), 0,
-                       (struct sockaddr*)&broadcast_addr, sizeof(broadcast_addr));
-            
+                handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr, read_fds);
+                handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr, read_fds);
+
                 ++it;
             } else {
                 // handleClientDisconnection(assigned_ports, teams, clients, *it);
@@ -238,11 +238,11 @@ void Server::handleClientMessages(fd_set& read_fds) {
     }
 }
 
-void Server::handleUdpBroadcast(fd_set& read_fds) {
-    if (FD_ISSET(udp_socket, &read_fds)) {
-        char buffer[1024] = "Hello to all clients!";
-        sendto(udp_socket, buffer, strlen(buffer), 0,
-               (struct sockaddr*)&broadcast_addr, sizeof(broadcast_addr));
+void Server::handleUdpBroadcast(int socket_fd, const sockaddr_in& addr, fd_set& read_fds) {
+    if (FD_ISSET(socket_fd, &read_fds)) {
+        const char* message = "Hello to all clients!";
+        sendto(socket_fd, message, strlen(message), 0,
+               (const sockaddr*)&addr, sizeof(addr));
     }
 }
 
@@ -292,10 +292,8 @@ void Server::startServer() {
     int max_fd;
 
     // تنظیمات برای ارسال Broadcast
-    memset(&broadcast_addr, 0, sizeof(broadcast_addr));
-    broadcast_addr.sin_family = AF_INET;
-    broadcast_addr.sin_port = htons(udp_port);
-    broadcast_addr.sin_addr.s_addr = INADDR_BROADCAST;
+    udpSocket.airLine.addr = makeBroadcastAddress(udpSocket.airLine.port);
+    udpSocket.customer.addr = makeBroadcastAddress(udpSocket.customer.port);
 
     while (true) {
         // handle time
@@ -330,6 +328,8 @@ void Server::startServer() {
         // } else {
             // handleGameMessages(read_fds);
         // }
-        handleUdpBroadcast(read_fds);
+        handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr, read_fds);
+        handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr, read_fds);
+
     }
 }

@@ -4,7 +4,8 @@
 #include "SHARED.hpp"
 #include "SeatMap.hpp"
 
-#define UDP_PORT 8081
+#define UDP_PORT_AIRLINE 8081
+#define UDP_PORT_COSTUMER 8082
 
 #define ERR_USERNAME_STR "ERR: Username already exists."
 #define ERR_ROLE_STR "ERR: Invalid role."
@@ -19,18 +20,27 @@ int BASE_PORT = 5000;
 
 using namespace std;
 
+struct UdpChannel {
+    int fd;
+    int port;
+    sockaddr_in addr;
+};
+
+struct UdpSocket {
+    UdpChannel airLine;
+    UdpChannel customer;
+};
+
+
 class Server
 {
 private:
-    struct sockaddr_in broadcast_addr;
+    UdpSocket udpSocket;
 
     int port_cntr = 0;
 
     int server_fd;
     int stp_port;
-
-    int udp_socket;
-    int udp_port = UDP_PORT;
 
     std::vector<Client_info*> clients;
 
@@ -53,7 +63,7 @@ private:
     void prepareFdSetForServer(fd_set& read_fds, int& max_fd);
     void handleNewConnections(fd_set& read_fds);
     void handleClientMessages(fd_set& read_fds);
-    void handleUdpBroadcast(fd_set& read_fds);
+    void Server::handleUdpBroadcast(int socket_fd, const sockaddr_in& addr, fd_set& read_fds);
     void handleKeyboardInput(fd_set &read_fds);
 
     // _____________ Check Client Info _____________
@@ -80,7 +90,10 @@ public:
         }
     
         // ایجاد سوکت UDP فقط برای ارسال Broadcast
-        udp_socket = create_socket(true, true);
+        udpSocket.airLine.fd = create_socket(true, true);
+        udpSocket.customer.fd = create_socket(true, true);
+        udpSocket.airLine.port = UDP_PORT_AIRLINE;
+        udpSocket.customer.port = UDP_PORT_COSTUMER;
     
         my_print("Server listening on port ");
         my_print(std::to_string(stp_port).c_str());

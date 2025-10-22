@@ -74,6 +74,8 @@ std::string to_string(const char* value);
 int create_socket(bool is_udp, bool is_broadcast);
 void bind_socket(int sock_fd, int port, bool is_udp);
 void connect_socket(int sock_fd, const char* ip, int port);
+sockaddr_in makeBroadcastAddress(int port, const std::string& ip = "255.255.255.255");
+
 
 std::string extractType(const std::string& input);
 void sendMsgToTeam(Team* team, const std::string& msg);

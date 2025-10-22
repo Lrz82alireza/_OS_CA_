@@ -110,6 +110,21 @@ void connect_socket(int sock_fd, const char* server_ip, int port) {
     }
 }
 
+sockaddr_in makeBroadcastAddress(int port, const std::string& ip)
+{
+    sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(port);
+
+    if (ip == "255.255.255.255")
+        addr.sin_addr.s_addr = INADDR_BROADCAST;
+    else
+        inet_pton(AF_INET, ip.c_str(), &addr.sin_addr);
+
+    return addr;
+}
+
 std::string extractType(const std::string& input) {
     if (input.empty() || input[0] != '/') return "";
 
