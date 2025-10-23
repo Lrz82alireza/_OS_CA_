@@ -39,7 +39,7 @@ std::string to_string(const char* value) {
     return std::string(value);
 }
 
-std::vector<std::string> split(const std::string& str, char delimiter = ' ') {
+std::vector<std::string> split(const std::string& str, char delimiter) {
     std::vector<std::string> result;
     std::stringstream ss(str);
     std::string token;
@@ -183,9 +183,13 @@ void read_line(std::string& input) {
 }
 
 Message decodeMessage(const std::string& message) {
-    std::string type = extractType(message);
+    std::vector<std::string> parts = split(message);
+    if (parts.empty()) {
+        return {-1, ""};
+    }
+    std::string type = split(message)[0];
     Message msg = {-1, ""};
-
+    
     if (type == REGISTER_STR) {
         msg.type = REGISTER_N;
     } else if (type == LOGIN_STR) {
@@ -198,14 +202,9 @@ Message decodeMessage(const std::string& message) {
         msg.type = CONFIRM_N;
     } else if (type == LIST_FLIGHTS_STR) {
         msg.type = LIST_FLIGHTS_N;
-    } else {
-        std::string tmp = "Invalid message type: ";
-        tmp += type;
-        tmp += "\n";
-        my_print(tmp.c_str());
     }
-    msg.content = message.substr(type.length() + 1);
-
+    msg.content = message;
+    
     return msg;
 }
 
@@ -221,37 +220,24 @@ Team* findTeamByClientName(const std::vector<Team*>& teams, const std::string& c
     return nullptr;
 }
 
-Client_info *findPartnerInTeam(Team *team, const std::string& clientName)
-{
-    if (team != nullptr) {
-        if (strcmp(team->coder->username, clientName.c_str()) == 0) {
-            return team->navigator;
-        } else {
-            return team->coder;
-        }
-    } 
+// void handleClientDisconnection(std::set<int> assigned_ports, std::vector<Team *> &teams, std::vector<Client_info *> &clients, Client_info *client)
+// {
+//     my_print("Client disconnected.\n");
+//     closeClientConnection(assigned_ports, client->client_fd, client->port);
 
-    return nullptr;
-}
+//     Team *team = findTeamByClientName(teams, client->username);
+//     // Client_info *partner = findPartnerInTeam(team, client->username);
+//     if (partner != nullptr) {
+//         std::string msg = "Your teammate disconnected.\n";
+//         send(partner->client_fd, msg.c_str(), strlen(msg.c_str()), 0);
+//     }
 
-void handleClientDisconnection(std::set<int> assigned_ports, std::vector<Team *> &teams, std::vector<Client_info *> &clients, Client_info *client)
-{
-    my_print("Client disconnected.\n");
-    closeClientConnection(assigned_ports, client->client_fd, client->port);
-
-    Team *team = findTeamByClientName(teams, client->username);
-    Client_info *partner = findPartnerInTeam(team, client->username);
-    if (partner != nullptr) {
-        std::string msg = "Your teammate disconnected.\n";
-        send(partner->client_fd, msg.c_str(), strlen(msg.c_str()), 0);
-    }
-
-    // erase from clients
-    auto it = std::find(clients.begin(), clients.end(), client);
-    if (it != clients.end()) {
-        clients.erase(it);
-    }
-}
+//     // erase from clients
+//     auto it = std::find(clients.begin(), clients.end(), client);
+//     if (it != clients.end()) {
+//         clients.erase(it);
+//     }
+// }
 
 // تابع برای بستن اتصال اولیه با کلاینت
 void closeClientConnection(std::set<int> assigned_ports, int client_fd, int port) {

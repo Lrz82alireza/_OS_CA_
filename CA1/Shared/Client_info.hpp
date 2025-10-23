@@ -1,6 +1,8 @@
 #ifndef CLIENT_INFO_HPP
 #define CLIENT_INFO_HPP
 
+#include <string>
+
 class Client_info
 {
 private:

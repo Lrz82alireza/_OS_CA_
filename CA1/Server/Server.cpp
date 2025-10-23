@@ -23,15 +23,24 @@ void Server::handleRegister(shared_ptr<Client_info> client, const string &conten
         send(client->client_fd, "ERR: Invalid REGISTER format", 28, 0);
         return;
     }
-    string role = ss[0];
-    string username = ss[1];
-    string password = ss[2];
+    string role = ss[1];
+    string username = ss[2];
+    string password = ss[3];
     
     
     if (registerClient(client, username, password, role) == -1) {
         return;
     }
     send(client->client_fd, APPROVED_REGISTER_STR, strlen(APPROVED_REGISTER_STR), 0);
+    my_print("Client ");
+    my_print(username.c_str());
+    my_print(" with role ");
+    my_print(role.c_str());
+    my_print(" registered successfully.\n");
+}
+
+void Server::handleLogin(shared_ptr<Client_info> client, const string &content)
+{
 }
 
 int Server::getAssignedPort(int client_fd)
@@ -132,15 +141,23 @@ int Server::registerClient(shared_ptr<Client_info> new_client, string username, 
     if ((role = checkClientInfo(*new_client, username, role_str)) == -1) {
         return -1;
     }
-    
+
+    shared_ptr<Client_info> updated_client;
     if (role == ROLE_AIRLINE) {
-        new_client = std::make_shared<Airline>(*new_client);
+        updated_client = std::make_shared<Airline>(*new_client);
     } else if (role == ROLE_COSTUMER) {
-        new_client = std::make_shared<Costumer>(*new_client);
+        updated_client = std::make_shared<Costumer>(*new_client);
     }   
-    new_client->role = role;
-    new_client->username = username;
-    new_client->password = password;
+
+    // update vector
+    auto it = std::find(clients.begin(), clients.end(), new_client);
+    if (it != clients.end()) {
+        *it = updated_client;  
+    }
+
+    updated_client->role = role;
+    updated_client->username = username;
+    updated_client->password = password;
 
     return 1;
 }
@@ -233,9 +250,9 @@ void Server::handleClientMessages(fd_set& read_fds) {
             if (len > 0) {
                 if (this->start_flag) {
                     if (client->isLoggedIn) {
-                        handleLoggedInMessages(*client, buffer, len);
+                        handleLoggedInMessages(client, buffer, len);
                     } else {
-                        handleLoggedOutMessages(*client, buffer, len);
+                        handleLoggedOutMessages(client, buffer, len);
                     }
                 } else {                    
                     buffer[len] = '\0';
@@ -264,13 +281,19 @@ void Server::handleClientMessages(fd_set& read_fds) {
     }
 }
 
-void Server::handleLoggedOutMessages(Client_info &client_info, const char* buffer, int len) {
+void Server::handleLoggedOutMessages(shared_ptr<Client_info> client_info, const char* buffer, int len) {
     Message msg = decodeMessage(std::string(buffer, len));
+    if (msg.type == -1) {
+        my_print("Invalid message from logged-out client.\n");
+        send(client_info->client_fd, "ERR: Invalid message type", 25, 0);
+        return;
+    }
 
-    
+    this->commandHandlers[msg.type](client_info, msg.content);
+
 }
 
-void Server::handleLoggedInMessages(Client_info &client_info, const char *buffer, int len)
+void Server::handleLoggedInMessages(shared_ptr<Client_info> client_info, const char *buffer, int len)
 {
 }
 
@@ -295,8 +318,13 @@ void Server::handleKeyboardInput(fd_set& read_fds) {
 
             // پردازش ورودی
             if (strcmp(buffer, "start\n") == 0) {
-                start_flag = true;
-                my_print("Server started!\n");
+                if (this->start_flag) {
+                    my_print("Server already started you dumbass!!\n");
+                    return;
+                } else {
+                    this->start_flag = true;
+                    my_print("Server started!\n");
+                }
                 return;
             }
             if (strcmp(buffer, "clients\n") == 0) {
@@ -342,9 +370,9 @@ void Server::startServer() {
         handleKeyboardInput(read_fds);
     
         handleNewConnections(read_fds);
-        if (!start_flag) {
+        // if (!start_flag) {
             handleClientMessages(read_fds);
-        }
+        // }
         // handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr, read_fds);
         // handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr, read_fds);
 

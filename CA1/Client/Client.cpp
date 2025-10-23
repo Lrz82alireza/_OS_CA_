@@ -39,14 +39,6 @@ void Client::closeTcpConnection(int sock) {
     close(sock);
 }
 
-// تابع برای ارسال اطلاعات کاربر به سرور
-void Client::sendUserInfo(int sock, const char* username, const char* role) {
-    Client_info client_info;
-    strncpy(client_info.username, username, sizeof(client_info.username) - 1);
-    strncpy(client_info.role, role, sizeof(client_info.role) - 1);
-    send(sock, &client_info, sizeof(client_info), 0);
-}
-
 // تابع برای ایجاد و تنظیم سوکت UDP
 int Client::setupUdpSocket(int udp_port) {
     int udp_sock = create_socket(true, false);
@@ -112,15 +104,6 @@ void Client::handleUserInput(int tcp_sock) {
     
     if (len > 0) {
         buffer[len] = '\0';
-
-        // codeSpace
-        if (decodeMessage(buffer).type == CODE_N) 
-        {
-            std::string tmp = codeSpace();
-            strncpy(buffer, tmp.c_str(), sizeof(buffer) - 1);
-            buffer[sizeof(buffer) - 1] = '\0';
-            len = strlen(buffer);
-        }
 
         send(tcp_sock, buffer, len, 0);
     }

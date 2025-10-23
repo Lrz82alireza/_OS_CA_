@@ -100,11 +100,9 @@ int createEvaluationSocket(const char* server_ip);
 void read_line(std::string& input);
 Message decodeMessage(const std::string& message);
 
-Team* findTeamByClientName(const std::vector<Team*>& teams, const std::string& clientName);
-Client_info *findPartnerInTeam(Team *team, const std::string& clientName);
 
 void handleClientDisconnection(std::set<int> assigned_ports, std::vector<Team *> &teams, std::vector<Client_info *> &clients, Client_info *client);
 void closeClientConnection(std::set<int> assigned_ports, int client_fd, int port);
 
-Client_info * handleClientReconnection(std::vector<Team *> &teams, std::vector<Client_info *> &clients, Client_info *client);
+// Client_info * handleClientReconnection(std::vector<Team *> &teams, std::vector<Client_info *> &clients, Client_info *client);
 #endif // SHARED_HPP

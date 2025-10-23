@@ -37,7 +37,8 @@ private:
     int server_fd;
     int stp_port;
 
-    bool start_flag = false;
+    // bool start_flag = false;
+    bool start_flag = true;
 
     std::vector<std::shared_ptr<Client_info>>clients;
     std::vector<std::shared_ptr<Airline>> airlines;
@@ -74,8 +75,8 @@ private:
     void handleKeyboardInput(fd_set &read_fds);
 
     void handleClientMessages(fd_set& read_fds);
-    void handleLoggedOutMessages(Client_info& client_info, const char* buffer, int len);
-    void handleLoggedInMessages(Client_info& client_info, const char* buffer, int len);
+    void handleLoggedOutMessages(shared_ptr<Client_info> client_info, const char* buffer, int len);
+    void handleLoggedInMessages(shared_ptr<Client_info> client_info, const char* buffer, int len);
 
     // _____________ Check Client Info _____________
     int HasUniqueUsername(string username);
@@ -86,7 +87,10 @@ private:
     int registerClient(shared_ptr<Client_info> new_client, string username, string password, string role);
     void handleNewClient(int server_fd);
 public:
-    Server(int port) : stp_port(port), server_fd(-1) {}
+    Server(int port) : stp_port(port), server_fd(-1) {
+        commandHandlers[REGISTER_N] = std::bind(&Server::handleRegister, this, std::placeholders::_1, std::placeholders::_2);
+        commandHandlers[LOGIN_N] = std::bind(&Server::handleLogin, this, std::placeholders::_1, std::placeholders::_2);
+    }
     ~Server() {}
 
     void startServer();

@@ -9,6 +9,11 @@ private:
     /* data */
 public:
     Costumer(/* args */) {}
+    Costumer(const Client_info& client) {
+        this->role = client.role;
+        this->username = client.username;
+        this->password = client.password;
+    }
     ~Costumer() {}
 };
 
