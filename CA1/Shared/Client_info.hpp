@@ -11,18 +11,13 @@ public:
     char role[20];
     int port;
     int client_fd;
+    bool isLoggedIn;
 
-    Client_info(/* args */);
-    ~Client_info();
+    Client_info(/* args */) {
+        this->isLoggedIn = false;
+    }
+    ~Client_info() {}
 };
-
-Client_info::Client_info(/* args */)
-{
-}
-
-Client_info::~Client_info()
-{
-}
 
 
 #endif

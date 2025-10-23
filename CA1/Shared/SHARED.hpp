@@ -3,8 +3,11 @@
 #ifndef SHARED_HPP
 #define SHARED_HPP
 
-#include "Client_info.hpp"
+#include "Airline.hpp"
+#include "Costumer.hpp"
 
+#include <map>
+#include <functional>
 #include <string>
 #include <sstream>
 #include <cstdlib>
@@ -21,17 +24,28 @@
 #define PASS "PASS"
 #define FAIL "FAIL"
 
-#define CODE_STR "/code"
-#define CHAT_STR "/chat"
-#define SUBMIT_STR "/submit"
-#define SAVE_STR "/save"
+#define REGISTER_STR "REGISTER"
+#define LOGIN_STR "LOGIN"
+#define ADD_FLIGHT_STR "ADD_FLIGHT"
+#define RESERVE_STR "RESERVE"
+#define CONFIRM_STR "CONFIRM"
 
-#define CODE_N 1
-#define CHAT_N 2
-#define SUBMIT_N 3
-#define SAVE_N 4
+#define REGISTER_N 1
+#define LOGIN_N 2
+#define ADD_FLIGHT_N 3
+#define RESERVE_N 4
+#define CONFIRM_N 5
 
+struct UdpChannel {
+    int fd;
+    int port;
+    sockaddr_in addr;
+};
 
+struct UdpSocket {
+    UdpChannel airLine;
+    UdpChannel customer;
+};
 
 struct State
 {
@@ -80,7 +94,6 @@ int createEvaluationSocket(const char* server_ip);
 
 void read_line(std::string& input);
 Message decodeMessage(const std::string& message);
-std::string codeSpace();
 
 Team* findTeamByClientName(const std::vector<Team*>& teams, const std::string& clientName);
 Client_info *findPartnerInTeam(Team *team, const std::string& clientName);

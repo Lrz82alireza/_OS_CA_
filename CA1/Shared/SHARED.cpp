@@ -174,14 +174,16 @@ Message decodeMessage(const std::string& message) {
     std::string type = extractType(message);
     Message msg = {-1, ""};
 
-    if (type == CODE_STR) {
-        msg.type = CODE_N;
-    } else if (type == CHAT_STR) {
-        msg.type = CHAT_N;
-    } else if (type == SUBMIT_STR) {
-        msg.type = SUBMIT_N;
-    } else if (type == SAVE_STR) {
-        msg.type = SAVE_N;
+    if (type == REGISTER_STR) {
+        msg.type = REGISTER_N;
+    } else if (type == LOGIN_STR) {
+        msg.type = LOGIN_N;
+    } else if (type == ADD_FLIGHT_STR) {
+        msg.type = ADD_FLIGHT_N;
+    } else if (type == RESERVE_STR) {
+        msg.type = RESERVE_N;
+    } else if (type == CONFIRM_STR) {
+        msg.type = CONFIRM_N;
     } else {
         std::string tmp = "Invalid message type: ";
         tmp += type;
@@ -191,24 +193,6 @@ Message decodeMessage(const std::string& message) {
     msg.content = message.substr(type.length() + 1);
 
     return msg;
-}
-
-std::string codeSpace() {
-    std::string tmp = "Start writing your code. Type 'save' on a new line to finish.\n";  
-    my_print(tmp.c_str());
-    std::string current_code = "/code ";
-
-    std::string line;
-    while (true) {
-        read_line(line);
-        if (line == SAVE_STR) {
-            my_print("Code saved successfully.\n");
-            break;
-        }
-        current_code += line;
-    }
-    my_print(current_code.c_str());
-    return current_code;
 }
 
 Team* findTeamByClientName(const std::vector<Team*>& teams, const std::string& clientName) {

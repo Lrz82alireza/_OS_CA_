@@ -41,17 +41,14 @@ run: all
 	# سمت راست: split به دو - بالا evaluator، پایین کلاینت‌ها
 	@tmux split-window -v -t mysession:0.1
 
-	# evaluation server
-	# @tmux send-keys -t mysession:0.1 'bash -c "python3 evaluation_server.py"' C-m
-
 	# تقسیم پایین برای چند کلاینت
 	@tmux split-window -v -t mysession:0.2
-	@tmux split-window -v -t mysession:0.3
+	# @tmux split-window -v -t mysession:0.3
 
 	# اجرای کلاینت‌ها
-	@tmux send-keys -t mysession:0.2 'bash -c "./Client/Client.out Mir 8080 coder"' C-m
-	@tmux send-keys -t mysession:0.3 'bash -c "./Client/Client.out Hashem 8080 navigator"' C-m
-	@tmux send-keys -t mysession:0.4 'bash -c "./Client/Client.out Abbookh 8080 coder"' C-m
+	@tmux send-keys -t mysession:0.1 'bash -c "./Client/Client.out 8080"' C-m
+	@tmux send-keys -t mysession:0.2 'bash -c "./Client/Client.out 8080"' C-m
+	@tmux send-keys -t mysession:0.3 'bash -c "./Client/Client.out 8080"' C-m
 
 	# اتصال به جلسه
 	@tmux attach-session -t mysession

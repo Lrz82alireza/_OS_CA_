@@ -162,27 +162,26 @@ void Server::handleNewClient(int server_fd) {
     if (new_client_fd < 0) return;
 
     // دریافت اطلاعات از کلاینت
-    Client_info new_client;
-    if (!receiveClientInfo(new_client_fd, new_client)) {
-        my_print("Failed to receive client information.\n");
-        closeClientConnection(assigned_ports, new_client_fd, new_port);
-        return;
-    }
-    new_client.port = new_port;
-    new_client.client_fd = new_client_fd;
+    // if (!receiveClientInfo(new_client_fd, new_client)) {
+        //     my_print("Failed to receive client information.\n");
+        //     closeClientConnection(assigned_ports, new_client_fd, new_port);
+        //     return;
+        // }
+        
+    Client_info *new_client = new Client_info();
+    new_client->port = new_port;
+    new_client->client_fd = new_client_fd;
 
-    if (addNewClient(new_client) == -1) {
-        send(new_client.client_fd, "ERR: Invalid information", 25, 0);
-        closeClientConnection(assigned_ports, new_client.client_fd, new_port);
-        return;
-    }
+    clients.push_back(new_client);
+        // if (addNewClient(new_client) == -1) {
+    //     send(new_client.client_fd, "ERR: Invalid information", 25, 0);
+    //     closeClientConnection(assigned_ports, new_client.client_fd, new_port);
+    //     return;
+    // }
 
     // چاپ اطلاعات کلاینت جدید
-    my_print("New client connected: ");
-    my_print(new_client.username);
-    my_print(" (");
-    my_print(new_client.role);
-    my_print(") on port ");
+    my_print("New client connected ");
+    my_print("on port ");
     my_print(std::to_string(new_port).c_str());
     my_print("\n");
 }
@@ -214,28 +213,47 @@ void Server::handleClientMessages(fd_set& read_fds) {
         if (FD_ISSET(client->client_fd, &read_fds)) {
             int len = recv(client->client_fd, buffer, sizeof(buffer) - 1, 0);
             if (len > 0) {
-                buffer[len] = '\0';
-                my_print("[TCP] Client ");
-                my_print(client->username);
-                my_print(": ");
-                my_print(buffer);
-                my_print("\n");
-            
-                // پاسخ به همان کلاینت
-                send(client->client_fd, "Received your message", 21, 0);
-            
-                // Broadcast پیام از طریق UDP
-                handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr);
-                handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr);
+                if (this->start_flag) {
+                    if (client->isLoggedIn) {
+                        handleLoggedInMessages(*client, buffer, len);
+                    } else {
+                        handleLoggedOutMessages(*client, buffer, len);
+                    }
+                } else {                    
+                    buffer[len] = '\0';
+                    my_print("[TCP] Client ");
+                    my_print(client->username);
+                    my_print(": ");
+                    my_print(buffer);
+                    my_print("\n");
+                
+                    // پاسخ به همان کلاینت
+                    send(client->client_fd, "Received your message", 21, 0);
+                
+                    // Broadcast پیام از طریق UDP
+                    handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr);
+                    handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr);
+                }
 
                 ++it;
             } else {
+                // client disconnection
                 // handleClientDisconnection(assigned_ports, teams, clients, *it);
             }
         } else {
             ++it;
         }
     }
+}
+
+void Server::handleLoggedOutMessages(Client_info &client_info, const char* buffer, int len) {
+    Message msg = decodeMessage(std::string(buffer, len));
+
+    
+}
+
+void Server::handleLoggedInMessages(Client_info &client_info, const char *buffer, int len)
+{
 }
 
 void Server::handleUdpBroadcast(int socket_fd, const sockaddr_in& addr) {
@@ -259,24 +277,9 @@ void Server::handleKeyboardInput(fd_set& read_fds) {
 
             // پردازش ورودی
             if (strcmp(buffer, "start\n") == 0) {
-                // startGame();
-                handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr);
-                handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr);
+                start_flag = true;
+                my_print("Server started!\n");
                 return;
-            }
-            // if (strcmp(buffer, "team\n") == 0) {
-            //     int count = 0;
-            //     my_print("Teams: \n");
-            //     for (auto team : teams) {
-            //         my_print("Team ");
-            //         my_print(to_string(count).c_str());
-            //         my_print(": ");
-            //         my_print(team->coder->username);
-            //         my_print(" - ");
-            //         my_print(team->navigator->username);
-            //         my_print("\n");
-            //         count++;
-            //     }
             }
             if (strcmp(buffer, "clients\n") == 0) {
                 my_print("Clients: \n");
@@ -289,6 +292,7 @@ void Server::handleKeyboardInput(fd_set& read_fds) {
             }
         }
     }
+}
 
 void Server::startServer() {
     fd_set read_fds;
@@ -299,11 +303,6 @@ void Server::startServer() {
     udpSocket.customer.addr = makeBroadcastAddress(udpSocket.customer.port);
 
     while (true) {
-        // handle time
-        // if (gameManager->handleTime() == END_GAME) {
-        //     break;
-        // }
-
         prepareFdSetForServer(read_fds, max_fd);
 
         // اضافه کردن STDIN_FILENO به مجموعه فایل‌ها
@@ -325,12 +324,9 @@ void Server::startServer() {
         handleKeyboardInput(read_fds);
     
         handleNewConnections(read_fds);
-        // if (start_flag == -1) {
-        //     pairUpClients();
+        if (!start_flag) {
             handleClientMessages(read_fds);
-        // } else {
-            // handleGameMessages(read_fds);
-        // }
+        }
         // handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr, read_fds);
         // handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr, read_fds);
 

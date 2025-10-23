@@ -3,6 +3,9 @@
 
 #include "SHARED.hpp"
 #include "SeatMap.hpp"
+#include "FlightManager.hpp"
+
+#define BASE_PORT 5000
 
 #define UDP_PORT_AIRLINE 8081
 #define UDP_PORT_COSTUMER 8082
@@ -18,33 +21,31 @@
 #define START_STR "start"
 
 std::set<int> assigned_ports;
-int BASE_PORT = 5000;
 
 using namespace std;
-
-struct UdpChannel {
-    int fd;
-    int port;
-    sockaddr_in addr;
-};
-
-struct UdpSocket {
-    UdpChannel airLine;
-    UdpChannel customer;
-};
-
 
 class Server
 {
 private:
     UdpSocket udpSocket;
 
-    int port_cntr = 0;
-
     int server_fd;
     int stp_port;
 
+    bool start_flag = false;
+
     std::vector<Client_info*> clients;
+    std::vector<Airline*> airlines;
+    std::vector<Costumer*> costumers;
+
+    FlightManager *flightManager = nullptr;
+
+    map<int, function<void(Client_info*, const string&)>> commandHandlers;
+
+    // _____________ DISPATCHER FUNC. _____________
+    void handleRegister(Client_info* client, const string& content);
+    void handleLogin(Client_info* client, const string& content);
+
 
     // _____________ CONNECTION FUNC. _____________
     
@@ -64,9 +65,12 @@ private:
     // _____________ توابع کمکی _____________
     void prepareFdSetForServer(fd_set& read_fds, int& max_fd);
     void handleNewConnections(fd_set& read_fds);
-    void handleClientMessages(fd_set& read_fds);
     void handleUdpBroadcast(int socket_fd, const sockaddr_in& addr);
     void handleKeyboardInput(fd_set &read_fds);
+
+    void handleClientMessages(fd_set& read_fds);
+    void handleLoggedOutMessages(Client_info& client_info, const char* buffer, int len);
+    void handleLoggedInMessages(Client_info& client_info, const char* buffer, int len);
 
     // _____________ Check Client Info _____________
     int HasUniqueUsername(Client_info new_client);
@@ -101,6 +105,9 @@ public:
         my_print(std::to_string(stp_port).c_str());
         my_print("\n");
     
+        // ایجاد FlightManager
+        this->flightManager = new FlightManager(&airlines, &costumers, &udpSocket);
+
         // راه‌اندازی پردازش TCP و UDP
         startServer();
     }

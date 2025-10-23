@@ -13,17 +13,14 @@
 class Client
 {
 private:
-    int tcp_sock;
-    int udp_sock;
-    char username[50];
-    char role[20];
+    int tcp_sock = -1;
+    int udp_sock = -1;
     int port;
     const char* server_ip;
 public:
-    Client(const char* username, int port, const char* role, const char* server_ip = "127.0.0.1")
-        : port(port), server_ip(server_ip), tcp_sock(-1) {
-        strncpy(this->username, username, sizeof(this->username) - 1);
-        strncpy(this->role, role, sizeof(this->role) - 1);
+    Client(int port, const char* server_ip = "127.0.0.1")
+        : port(port), server_ip(server_ip) {
+            
     }
     ~Client() {
         if (tcp_sock != -1) close(tcp_sock);

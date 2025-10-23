@@ -8,17 +8,9 @@ class Airline : public Client_info
 private:
     /* data */
 public:
-    Airline(/* args */);
-    ~Airline();
+    Airline(/* args */) {}
+    ~Airline() {}
 };
-
-Airline::Airline(/* args */)
-{
-}
-
-Airline::~Airline()
-{
-}
 
 
 #endif

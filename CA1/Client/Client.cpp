@@ -1,18 +1,14 @@
 #include "Client.hpp"
 
 int main(int argc, char* argv[]) {
-    if (argc != 4) {
+    if (argc != 2) {
         my_print("Usage: ");
         my_print(argv[0]);
-        my_print(" <username> <port> <role>\n");
+        my_print(" <port>\n");
         return EXIT_FAILURE;
     }
 
-    const char* username = argv[1];
-    int port = atoi(argv[2]);
-    const char* role = argv[3];
-
-    Client client(username, port, role);
+    Client client(atoi(argv[1]));
     client.connectToServer();
 
     return 0;
@@ -83,27 +79,18 @@ void Client::connectToServer() {
     // اتصال به پورت جدید
     tcp_sock = connectToTcpServer(server_ip, new_port);
     my_print("Client ");
-    my_print(username);
-    my_print(" connected to server on port ");
+    my_print("connected to server on port ");
     my_print(std::to_string(new_port).c_str());
     my_print(" on fd ");
-    my_print(std::to_string(tcp_sock).c_str());
+    std::string msg = std::to_string(this->tcp_sock);
+    my_print(msg.c_str());
     my_print("\n");
-
 
     // ارسال اطلاعات کاربر به سرور
-    sendUserInfo(tcp_sock, username, role);
+    // sendUserInfo(tcp_sock, username, role);
     
     // ایجاد و تنظیم سوکت UDP
-    udp_sock = setupUdpSocket(UDP_PORT);
-
-    my_print("Connected to server as ");
-    my_print(username);
-    my_print(" (");
-    my_print(role);
-    my_print(") on new port ");
-    my_print(std::to_string(new_port).c_str());
-    my_print("\n");
+    // udp_sock = setupUdpSocket(UDP_PORT);
 
     startClient();
 }
@@ -112,8 +99,10 @@ void Client::connectToServer() {
 void Client::prepareFdSet(fd_set& read_fds, int tcp_sock, int udp_sock) {
     FD_ZERO(&read_fds);
     FD_SET(STDIN_FILENO, &read_fds);
-    FD_SET(tcp_sock, &read_fds);
-    FD_SET(udp_sock, &read_fds);
+    if (tcp_sock)
+        FD_SET(tcp_sock, &read_fds);
+    if (udp_sock)
+        FD_SET(udp_sock, &read_fds);
 }    
 
 void Client::handleUserInput(int tcp_sock) {
@@ -189,7 +178,7 @@ void Client::startClient() {
             }
         }
 
-        if (FD_ISSET(udp_sock, &read_fds)) {
+        if (udp_sock && FD_ISSET(udp_sock, &read_fds)) {
             handleUdpMessage(udp_sock);
         }
     }

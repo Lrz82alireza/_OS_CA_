@@ -8,17 +8,9 @@ class Costumer : public Client_info
 private:
     /* data */
 public:
-    Costumer(/* args */);
-    ~Costumer();
+    Costumer(/* args */) {}
+    ~Costumer() {}
 };
-
-Costumer::Costumer(/* args */)
-{
-}
-
-Costumer::~Costumer()
-{
-}
 
 
 #endif
