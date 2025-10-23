@@ -9,20 +9,21 @@ class FlightManager
 {
 private:
     
-    vector<Airline*>* airlines;
-    vector<Costumer*>* costumers;
+    vector<shared_ptr<Airline>>* airlines;
+    vector<shared_ptr<Costumer>>* costumers;
 
     UdpSocket *udpSocket;
 
-    map<int, function<void(Client_info*, const string&)>> commandHandlers;
+    map<int, function<void(shared_ptr<Client_info>, const string&)>> commandHandlers;
 
     // ___________ DISPATCHER FUNC. _____________
-    void handleAddFlight(Client_info* client, const string& content);
-    void handleReserveFlight(Client_info* client, const string& content);
-    void handleConfirmReservation(Client_info* client, const string& content);
+    void handleAddFlight(shared_ptr<Client_info> client, const string& content);
+    void handleReserve(shared_ptr<Client_info> client, const string& content);
+    void handleConfirm(shared_ptr<Client_info> client, const string& content);
+    void handleLastFlights(shared_ptr<Client_info> client, const string& content);
 
 public:
-    FlightManager(vector<Airline*>* airlines, vector<Costumer*>* costumers, UdpSocket *udpSocket) 
+    FlightManager(vector<shared_ptr<Airline>>* airlines, vector<shared_ptr<Costumer>>* costumers, UdpSocket *udpSocket) 
         :airlines(airlines), costumers(costumers), udpSocket(udpSocket) {
             
     }

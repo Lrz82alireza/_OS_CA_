@@ -26,7 +26,7 @@ std::string to_string(int value) {
 
 // تبدیل عدد اعشاری به رشته
 std::string to_string(double value) {
-    char buffer[32]; // فضای کافی برای نمایش عدد اعشاری
+    char buffer[32]; 
     sprintf(buffer, "%.6f", value); // نمایش تا 6 رقم اعشار
     return std::string(buffer);
 }
@@ -34,9 +34,21 @@ std::string to_string(double value) {
 // تبدیل const char* به رشته
 std::string to_string(const char* value) {
     if (value == nullptr) {
-        return std::string(""); // جلوگیری از کرش در صورت nullptr
+        return std::string(""); 
     }
     return std::string(value);
+}
+
+std::vector<std::string> split(const std::string& str, char delimiter = ' ') {
+    std::vector<std::string> result;
+    std::stringstream ss(str);
+    std::string token;
+
+    while (std::getline(ss, token, delimiter)) {
+        result.push_back(token);
+    }
+    
+    return result;
 }
 
 // تابع برای ایجاد سوکت

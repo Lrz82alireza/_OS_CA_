@@ -9,10 +9,15 @@
 
 #define UDP_PORT_AIRLINE 8081
 #define UDP_PORT_COSTUMER 8082
+
+#define ROLE_AIRLINE_STR "AIRLINE"
 #define ROLE_AIRLINE 1
+#define ROLE_COSTUMER_STR "COSTUMER"
 #define ROLE_COSTUMER 2
 
-#define ERR_USERNAME_STR "ERR: Username already exists."
+// Response Messages
+#define APPROVED_REGISTER_STR "REGISTERED OK"
+#define ERR_USERNAME_STR "ERROR UsernameAlreadyExists"
 #define ERR_ROLE_STR "ERR: Invalid role."
 
 #define SEATS_COLUMN_MAX_SIZE 26
@@ -34,17 +39,17 @@ private:
 
     bool start_flag = false;
 
-    std::vector<Client_info*> clients;
-    std::vector<Airline*> airlines;
-    std::vector<Costumer*> costumers;
+    std::vector<std::shared_ptr<Client_info>>clients;
+    std::vector<std::shared_ptr<Airline>> airlines;
+    std::vector<std::shared_ptr<Costumer>> costumers;
 
-    FlightManager *flightManager = nullptr;
+    std::shared_ptr<FlightManager> flightManager = nullptr;
 
-    map<int, function<void(Client_info*, const string&)>> commandHandlers;
+    map<int, function<void(shared_ptr<Client_info>, const string&)>> commandHandlers;
 
     // _____________ DISPATCHER FUNC. _____________
-    void handleRegister(Client_info* client, const string& content);
-    void handleLogin(Client_info* client, const string& content);
+    void handleRegister(shared_ptr<Client_info> client, const string& content);
+    void handleLogin(shared_ptr<Client_info> client, const string& content);
 
 
     // _____________ CONNECTION FUNC. _____________
@@ -73,12 +78,12 @@ private:
     void handleLoggedInMessages(Client_info& client_info, const char* buffer, int len);
 
     // _____________ Check Client Info _____________
-    int HasUniqueUsername(Client_info new_client);
-    int HasValidRole(Client_info new_client);
-    int checkClientInfo(Client_info new_client);
+    int HasUniqueUsername(string username);
+    int HasValidRole(string role);
+    int checkClientInfo(Client_info new_client, string username, string role);
     // _____________ Check Client Info _____________
 
-    int addNewClient(Client_info new_client);
+    int registerClient(shared_ptr<Client_info> new_client, string username, string password, string role);
     void handleNewClient(int server_fd);
 public:
     Server(int port) : stp_port(port), server_fd(-1) {}
@@ -106,7 +111,7 @@ public:
         my_print("\n");
     
         // ایجاد FlightManager
-        this->flightManager = new FlightManager(&airlines, &costumers, &udpSocket);
+        this->flightManager = make_shared<FlightManager>(&airlines, &costumers, &udpSocket);
 
         // راه‌اندازی پردازش TCP و UDP
         startServer();

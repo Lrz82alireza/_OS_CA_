@@ -16,7 +16,26 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-int Server::getAssignedPort(int client_fd) {
+void Server::handleRegister(shared_ptr<Client_info> client, const string &content)
+{
+    vector<std::string> ss = split(content, ' ');
+    if (ss.size() < 3) {
+        send(client->client_fd, "ERR: Invalid REGISTER format", 28, 0);
+        return;
+    }
+    string role = ss[0];
+    string username = ss[1];
+    string password = ss[2];
+    
+    
+    if (registerClient(client, username, password, role) == -1) {
+        return;
+    }
+    send(client->client_fd, APPROVED_REGISTER_STR, strlen(APPROVED_REGISTER_STR), 0);
+}
+
+int Server::getAssignedPort(int client_fd)
+{
     struct sockaddr_in addr;
     socklen_t addr_len = sizeof(addr);
     getsockname(client_fd, (struct sockaddr*)&addr, &addr_len);
@@ -76,55 +95,54 @@ bool Server::receiveClientInfo(int client_fd, Client_info &new_client) {
 
 // _____________ Check Client Info _____________
 
-int Server::HasUniqueUsername(Client_info new_client) {
+int Server::HasUniqueUsername(string username) {
     for (int i = 0; i < clients.size(); i++) {
-        if (strcmp(clients[i]->username, new_client.username) == 0) {
+        if (clients[i]->username == username) {
             return -1;
         }
     }
     return 1;
 }
 
-int Server::HasValidRole(Client_info new_client) {
-    // if (strcmp(new_client.role, ROLE_CODER_STR) == 0) {
-    //     return 1;
-    // }
-    // if (strcmp(new_client.role, ROLE_NAVIGATOR_STR) == 0) {
-    //     return 1;
-    // }
-    // return -1;
-
-    return 1;
+int Server::HasValidRole(string role) {
+    if (strcmp(role.c_str(), ROLE_AIRLINE_STR) == 0) {
+        return ROLE_AIRLINE;
+    }
+    if (strcmp(role.c_str(), ROLE_COSTUMER_STR) == 0) {
+        return ROLE_COSTUMER;
+    }
+    return -1;
 }
 
-int Server::checkClientInfo(Client_info new_client) {
-    if (HasUniqueUsername(new_client) == -1) {
+int Server::checkClientInfo(Client_info new_client, string username, string role) {
+    if (HasUniqueUsername(username) == -1) {
         send(new_client.client_fd, ERR_USERNAME_STR, strlen(ERR_USERNAME_STR), 0);
         return -1;
     }
-    if (HasValidRole(new_client) == -1) {
+    int res;
+    if ((res = HasValidRole(role)) == -1) {
         send(new_client.client_fd, ERR_ROLE_STR, strlen(ERR_ROLE_STR), 0);
         return -1;
     }
-    return 1;
+    return res;
 }
 
-int Server::addNewClient(Client_info new_client) {
-    if (checkClientInfo(new_client) == -1) {
+int Server::registerClient(shared_ptr<Client_info> new_client, string username, string password, string role_str) {
+    int role;
+    if ((role = checkClientInfo(*new_client, username, role_str)) == -1) {
         return -1;
     }
-    Client_info * ptr = new Client_info(new_client);
     
-    // Team *team = findTeamByClientName(teams, new_client.username);
-    // if (team != nullptr) {
-    //     my_print("Client recconected\n");
-    //     handleClientReconnection(teams, clients, ptr);
-    // } else {
-    //     new_client.has_teammate = false;
-    // }
-    
-    clients.push_back(ptr);
-    return clients.size();
+    if (role == ROLE_AIRLINE) {
+        new_client = std::make_shared<Airline>(*new_client);
+    } else if (role == ROLE_COSTUMER) {
+        new_client = std::make_shared<Costumer>(*new_client);
+    }   
+    new_client->role = role;
+    new_client->username = username;
+    new_client->password = password;
+
+    return 1;
 }
 
 void Server::handleNewClient(int server_fd) {
@@ -168,7 +186,7 @@ void Server::handleNewClient(int server_fd) {
         //     return;
         // }
         
-    Client_info *new_client = new Client_info();
+    std::shared_ptr<Client_info> new_client = std::make_shared<Client_info>();
     new_client->port = new_port;
     new_client->client_fd = new_client_fd;
 
@@ -207,7 +225,7 @@ void Server::handleNewConnections(fd_set& read_fds) {
 void Server::handleClientMessages(fd_set& read_fds) {
     char buffer[1024];
     for (auto it = clients.begin(); it != clients.end(); ) {
-        Client_info *client = *it;
+        std::shared_ptr<Client_info> client = *it;
 
 
         if (FD_ISSET(client->client_fd, &read_fds)) {
@@ -222,7 +240,7 @@ void Server::handleClientMessages(fd_set& read_fds) {
                 } else {                    
                     buffer[len] = '\0';
                     my_print("[TCP] Client ");
-                    my_print(client->username);
+                    my_print(client->username.c_str());
                     my_print(": ");
                     my_print(buffer);
                     my_print("\n");
@@ -284,9 +302,9 @@ void Server::handleKeyboardInput(fd_set& read_fds) {
             if (strcmp(buffer, "clients\n") == 0) {
                 my_print("Clients: \n");
                 for (auto client : clients) {
-                    my_print(client->username);
+                    my_print(client->username.c_str());
                     my_print(" (");
-                    my_print(client->role);
+                    my_print(to_string(client->role).c_str());
                     my_print(")\n");
                 }
             }

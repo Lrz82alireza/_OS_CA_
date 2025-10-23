@@ -20,6 +20,7 @@
 #include <thread>
 #include <chrono>
 #include <set>
+#include <memory>
 
 #define PASS "PASS"
 #define FAIL "FAIL"
@@ -77,12 +78,14 @@ struct Message
     std::string content;
 };
 
-
+// string utility functions
 void my_print(const char* str);
-std::string to_string(int value);
-std::string to_string(double value);
-std::string to_string(const char* value);
+// std::string to_string(int value);
+// std::string to_string(double value);
+// std::string to_string(const char* value);
+std::vector<std::string> split(const std::string& str, char delimiter = ' ');
 
+// socket utility functions
 int create_socket(bool is_udp, bool is_broadcast);
 void bind_socket(int sock_fd, int port, bool is_udp);
 void connect_socket(int sock_fd, const char* ip, int port);

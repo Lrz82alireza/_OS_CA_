@@ -6,10 +6,10 @@ class Client_info
 private:
     /* data */
 public:
-    char username[50];
-    char password[50];
-    char role[20];
-    int port;
+    std::string username;
+    std::string password;
+    int role;
+    int port = -1;
     int client_fd;
     bool isLoggedIn;
 
