@@ -184,6 +184,8 @@ Message decodeMessage(const std::string& message) {
         msg.type = RESERVE_N;
     } else if (type == CONFIRM_STR) {
         msg.type = CONFIRM_N;
+    } else if (type == LIST_FLIGHTS_STR) {
+        msg.type = LIST_FLIGHTS_N;
     } else {
         std::string tmp = "Invalid message type: ";
         tmp += type;

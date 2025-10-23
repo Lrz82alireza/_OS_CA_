@@ -29,12 +29,14 @@
 #define ADD_FLIGHT_STR "ADD_FLIGHT"
 #define RESERVE_STR "RESERVE"
 #define CONFIRM_STR "CONFIRM"
+#define LIST_FLIGHTS_STR "LIST_FLIGHTS"
 
 #define REGISTER_N 1
 #define LOGIN_N 2
 #define ADD_FLIGHT_N 3
 #define RESERVE_N 4
 #define CONFIRM_N 5
+#define LIST_FLIGHTS_N 6
 
 struct UdpChannel {
     int fd;
