@@ -12,11 +12,6 @@
 #define UDP_PORT_AIRLINE 8081
 #define UDP_PORT_CUSTOMER 8082
 
-#define ROLE_AIRLINE_STR "AIRLINE"
-#define ROLE_AIRLINE 1
-#define ROLE_CUSTOMER_STR "CUSTOMER"
-#define ROLE_CUSTOMER 2
-
 // Response Messages
 #define APPROVED_REGISTER_STR "REGISTERED OK"
 #define ERR_USERNAME_STR "ERROR UsernameAlreadyExists"
@@ -79,7 +74,6 @@ private:
     // _____________ توابع کمکی _____________
     void prepareFdSetForServer(fd_set& read_fds, int& max_fd);
     void handleNewConnections(fd_set& read_fds);
-    void handleUdpBroadcast(int socket_fd, const sockaddr_in& addr, std::string message);
     void handleKeyboardInput(fd_set &read_fds);
 
     void handleClientMessages(fd_set& read_fds);
@@ -122,7 +116,7 @@ public:
         my_print("\n");
     
         // ایجاد FlightManager
-        // this->flightManager = make_shared<FlightManager>(&airlines, &customers, &udpSocket);
+        this->flightManager = make_shared<FlightManager>(&users, &udpSocket);
 
         // راه‌اندازی پردازش TCP و UDP
         startServer();

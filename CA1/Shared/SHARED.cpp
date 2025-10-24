@@ -58,6 +58,14 @@ std::vector<std::string> split(const std::string& str, char delimiter) {
     return result;
 }
 
+void sendBroadcastMessage(int socket_fd, const sockaddr_in &addr, std::string message)
+{
+    int sent = sendto(socket_fd, message.c_str(), message.length(), 0,
+                    (const sockaddr*)&addr, sizeof(addr));
+    if (sent < 0)
+        perror("sendto failed");
+}
+
 // تابع برای ایجاد سوکت
 int create_socket(bool is_udp, bool is_broadcast) {
     int sock_fd = socket(AF_INET, (is_udp ? SOCK_DGRAM : SOCK_STREAM), 0);

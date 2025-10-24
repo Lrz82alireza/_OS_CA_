@@ -22,8 +22,10 @@
 #include <set>
 #include <memory>
 
-#define PASS "PASS"
-#define FAIL "FAIL"
+#define ROLE_AIRLINE_STR "AIRLINE"
+#define ROLE_AIRLINE 1
+#define ROLE_CUSTOMER_STR "CUSTOMER"
+#define ROLE_CUSTOMER 2
 
 #define REGISTER_STR "REGISTER"
 #define LOGIN_STR "LOGIN"
@@ -78,6 +80,9 @@ void my_print(const std::string& str);
 // std::string to_string(double value);
 // std::string to_string(const char* value);
 std::vector<std::string> split(const std::string& str, char delimiter = ' ');
+
+// send Message
+void sendBroadcastMessage(int socket_fd, const sockaddr_in& addr, std::string message);
 
 // socket utility functions
 int create_socket(bool is_udp, bool is_broadcast);

@@ -38,8 +38,8 @@ void Server::handleRegister(shared_ptr<Client_info> client, const string &conten
     my_print(role.c_str());
     my_print(" registered successfully.\n");
 
-    handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr, "BROADCAST NEW_USER " + username + " " + role + " \n");
-    handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr, "BROADCAST NEW_USER " + username + " " + role + " \n");
+    sendBroadcastMessage(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr, "BROADCAST NEW_USER " + username + " " + role + " \n");
+    sendBroadcastMessage(this->udpSocket.customer.fd, this->udpSocket.customer.addr, "BROADCAST NEW_USER " + username + " " + role + " \n");
 }
 
 void Server::handleLogin(shared_ptr<Client_info> client, const string &content)
@@ -58,7 +58,6 @@ void Server::handleLogin(shared_ptr<Client_info> client, const string &content)
         send(client->client_fd, ERR_LOGIN_STR, strlen(ERR_LOGIN_STR), 0);
         return;
     }
-    client->isLoggedIn = true;
     client->user = user;
 
     sendUdpPort(client);
@@ -302,7 +301,7 @@ void Server::handleClientMessages(fd_set& read_fds) {
             int len = recv(client->client_fd, buffer, sizeof(buffer) - 1, 0);
             if (len > 0) {
                 if (this->start_flag) {
-                    if (client->isLoggedIn) {
+                    if (client->user != nullptr) {
                         handleLoggedInMessages(client, buffer, len);
                     } else {
                         handleLoggedOutMessages(client, buffer, len);
@@ -341,19 +340,23 @@ void Server::handleLoggedOutMessages(shared_ptr<Client_info> client_info, const 
         return;
     }
 
-    this->commandHandlers[msg.type](client_info, msg.content);
-
+    auto it = commandHandlers.find(msg.type);
+    if (it != commandHandlers.end()) {
+        it->second(client_info, msg.content);
+    } else {
+        // my_print("Unknown command type.\n");
+        send(client_info->client_fd, "ERR: Invalid message type", 21, 0);
+    }
 }
 
 void Server::handleLoggedInMessages(shared_ptr<Client_info> client_info, const char *buffer, int len)
 {
-}
-
-void Server::handleUdpBroadcast(int socket_fd, const sockaddr_in& addr, std::string message) {
-    int sent = sendto(socket_fd, message.c_str(), message.length(), 0,
-                      (const sockaddr*)&addr, sizeof(addr));
-    if (sent < 0)
-        perror("sendto failed");
+    if (this->flightManager != nullptr) {
+        this->flightManager->handleMessage(client_info, buffer, len);
+    } else {
+        my_print("FlightManager not initialized.\n");
+        send(client_info->client_fd, "ERR: Server not ready", 21, 0);
+    }
 }
 
 
@@ -395,8 +398,8 @@ void Server::handleKeyboardInput(fd_set& read_fds) {
                 }
             }
             if (strcmp(buffer, "udp\n") == 0) {
-                handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr, "BROADCAST: AIRLINE");
-                handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr, "BROADCAST: CUSTOMER");
+                sendBroadcastMessage(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr, "BROADCAST: AIRLINE");
+                sendBroadcastMessage(this->udpSocket.customer.fd, this->udpSocket.customer.addr, "BROADCAST: CUSTOMER");
             }
         }
     }
