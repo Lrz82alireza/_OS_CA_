@@ -4,7 +4,7 @@
 #define SHARED_HPP
 
 #include "Airline.hpp"
-#include "Costumer.hpp"
+#include "Customer.hpp"
 
 #include <map>
 #include <functional>

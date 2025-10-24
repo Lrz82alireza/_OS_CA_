@@ -10,12 +10,12 @@
 #define BASE_PORT 5000
 
 #define UDP_PORT_AIRLINE 8081
-#define UDP_PORT_COSTUMER 8082
+#define UDP_PORT_CUSTOMER 8082
 
 #define ROLE_AIRLINE_STR "AIRLINE"
 #define ROLE_AIRLINE 1
-#define ROLE_COSTUMER_STR "CUSTOMER"
-#define ROLE_COSTUMER 2
+#define ROLE_CUSTOMER_STR "CUSTOMER"
+#define ROLE_CUSTOMER 2
 
 // Response Messages
 #define APPROVED_REGISTER_STR "REGISTERED OK"
@@ -115,14 +115,14 @@ public:
         udpSocket.airLine.fd = create_socket(true, true);
         udpSocket.customer.fd = create_socket(true, true);
         udpSocket.airLine.port = UDP_PORT_AIRLINE;
-        udpSocket.customer.port = UDP_PORT_COSTUMER;
+        udpSocket.customer.port = UDP_PORT_CUSTOMER;
     
         my_print("Server listening on port ");
         my_print(std::to_string(stp_port).c_str());
         my_print("\n");
     
         // ایجاد FlightManager
-        // this->flightManager = make_shared<FlightManager>(&airlines, &costumers, &udpSocket);
+        // this->flightManager = make_shared<FlightManager>(&airlines, &customers, &udpSocket);
 
         // راه‌اندازی پردازش TCP و UDP
         startServer();

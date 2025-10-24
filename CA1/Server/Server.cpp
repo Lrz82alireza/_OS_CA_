@@ -39,6 +39,7 @@ void Server::handleRegister(shared_ptr<Client_info> client, const string &conten
     my_print(" registered successfully.\n");
 
     handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr, "BROADCAST NEW_USER " + username + " " + role + " \n");
+    handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr, "BROADCAST NEW_USER " + username + " " + role + " \n");
 }
 
 void Server::handleLogin(shared_ptr<Client_info> client, const string &content)
@@ -139,7 +140,7 @@ int Server::HasValidRole(string role) {
         return ROLE_AIRLINE;
     }
     if (strcmp(role.c_str(), ROLE_CUSTOMER_STR) == 0) {
-        return ROLE_COSTUMER;
+        return ROLE_CUSTOMER;
     }
     return -1;
 }
@@ -167,9 +168,9 @@ int Server::registerClient(shared_ptr<Client_info> client, string username, stri
     if (role == ROLE_AIRLINE) {
         user = std::make_shared<Airline>(*user);
         role = ROLE_AIRLINE;
-    } else if (role == ROLE_COSTUMER) {
-        user = std::make_shared<Costumer>(*user);
-        role = ROLE_COSTUMER;
+    } else if (role == ROLE_CUSTOMER) {
+        user = std::make_shared<Customer>(*user);
+        role = ROLE_CUSTOMER;
     }   
 
     users.push_back(user);    
@@ -195,7 +196,7 @@ void Server::sendUdpPort(shared_ptr<Client_info> client)
     std::string msg = "PORT: ";
     if (client->user->role == ROLE_AIRLINE) {
         msg += std::to_string(this->udpSocket.airLine.port) + " ";
-    } else if (client->user->role == ROLE_COSTUMER) {
+    } else if (client->user->role == ROLE_CUSTOMER) {
         msg += std::to_string(this->udpSocket.customer.port) + " ";
     }
     

@@ -1,19 +1,19 @@
-#ifndef COSTUMER_HPP
-#define COSTUMER_HPP
+#ifndef CUSTOMER_HPP
+#define CUSTOMER_HPP
 
 #include "User.hpp"
 
-class Costumer : public User
+class Customer : public User
 {
 private:
     /* data */
 public:
-    Costumer(const User& user) {
+    Customer(const User& user) {
         this->username = user.username;
         this->password = user.password;
         this->role = user.role;
     }
-    ~Costumer() {}
+    ~Customer() {}
 };
 
 

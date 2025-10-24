@@ -11,7 +11,7 @@ class FlightManager
 private:
     
     vector<shared_ptr<Airline>>* airlines;
-    vector<shared_ptr<Costumer>>* costumers;
+    vector<shared_ptr<Customer>>* customers;
 
     UdpSocket *udpSocket;
 
@@ -24,8 +24,8 @@ private:
     void handleLastFlights(shared_ptr<Client_info> client, const string& content);
 
 public:
-    FlightManager(vector<shared_ptr<Airline>>* airlines, vector<shared_ptr<Costumer>>* costumers, UdpSocket *udpSocket) 
-        :airlines(airlines), costumers(costumers), udpSocket(udpSocket) {
+    FlightManager(vector<shared_ptr<Airline>>* airlines, vector<shared_ptr<Customer>>* customers, UdpSocket *udpSocket) 
+        :airlines(airlines), customers(customers), udpSocket(udpSocket) {
             
     }
     ~FlightManager() {}
