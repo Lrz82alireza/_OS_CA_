@@ -20,13 +20,24 @@ struct Flight
 };
 
 
+struct Reservation {
+    int reservation_id;
+    std::string flight_id;
+    std::string username;
+    std::vector<std::string> seats;
+    std::string status;     // TEMPORARY / CONFIRMED
+    time_t timestamp;
+};
+
+
+
 class FlightManager
 {
 private:
     
     vector<shared_ptr<User>>* users;
-
     vector<shared_ptr<Flight>> flights;
+    vector<shared_ptr<Reservation>> reservations;
 
     UdpSocket *udpSocket;
 

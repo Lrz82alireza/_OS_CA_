@@ -28,6 +28,21 @@ void FlightManager::handleAddFlight(shared_ptr<Client_info> client, const string
     sendBroadcastMessage(udpSocket->customer.fd, udpSocket->customer.addr, broadcast_msg);
 }
 
+void FlightManager::handleListFlights(shared_ptr<Client_info> client, const string &content)
+{
+    string msg = "";
+    for (const auto& flight : flights) {
+        int max_seats = flight->seatMap.getRows() * flight->seatMap.getCols();
+        msg += "FLIGHT " + flight->flight_id + " " + flight->origin + " " + flight->destination + " " 
+            + flight->time + " SEATS_AVAILABLE " + to_string(flight->seatMap.getFreeSeatsCount()) + "/" 
+            + to_string(max_seats) + "\n";
+    }
+    if (msg.empty()) {
+        msg = "NO_FLIGHTS\n";
+    }
+    send(client->client_fd, msg.c_str(), msg.length(), 0);
+}
+
 bool FlightManager::isFlightIdUnique(const string &flight_id)
 {
     for (const auto& flight : flights) {
