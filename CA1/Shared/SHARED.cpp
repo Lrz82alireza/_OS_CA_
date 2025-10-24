@@ -17,34 +17,34 @@ void my_print(const char* str) {
     write(STDOUT_FILENO, str, strlen(str));
 }
 void my_print(const int str) {
-    std::string s = to_string(str);
+    std::string s = std::to_string(str);
     write(STDOUT_FILENO, s.c_str(), s.length());
 }
 void my_print(const std::string& str) {
     write(STDOUT_FILENO, str.c_str(), str.length());
 }
 
-// تبدیل عدد صحیح به رشته
-std::string to_string(int value) {
-    char buffer[12]; // فضای کافی برای نمایش عدد صحیح (حداکثر 11 رقم + null)
-    sprintf(buffer, "%d", value);
-    return std::string(buffer);
-}
+// // تبدیل عدد صحیح به رشته
+// std::string to_string(int value) {
+//     char buffer[12]; // فضای کافی برای نمایش عدد صحیح (حداکثر 11 رقم + null)
+//     sprintf(buffer, "%d", value);
+//     return std::string(buffer);
+// }
 
-// تبدیل عدد اعشاری به رشته
-std::string to_string(double value) {
-    char buffer[32]; 
-    sprintf(buffer, "%.6f", value); // نمایش تا 6 رقم اعشار
-    return std::string(buffer);
-}
+// // تبدیل عدد اعشاری به رشته
+// std::string to_string(double value) {
+//     char buffer[32]; 
+//     sprintf(buffer, "%.6f", value); // نمایش تا 6 رقم اعشار
+//     return std::string(buffer);
+// }
 
-// تبدیل const char* به رشته
-std::string to_string(const char* value) {
-    if (value == nullptr) {
-        return std::string(""); 
-    }
-    return std::string(value);
-}
+// // تبدیل const char* به رشته
+// std::string to_string(const char* value) {
+//     if (value == nullptr) {
+//         return std::string(""); 
+//     }
+//     return std::string(value);
+// }
 
 std::vector<std::string> split(const std::string& str, char delimiter) {
     std::vector<std::string> result;

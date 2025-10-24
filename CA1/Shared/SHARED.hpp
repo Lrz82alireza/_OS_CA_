@@ -74,9 +74,9 @@ struct Message
 void my_print(const char* str);
 void my_print(const int str);
 void my_print(const std::string& str);
-std::string to_string(int value);
-std::string to_string(double value);
-std::string to_string(const char* value);
+// std::string to_string(int value);
+// std::string to_string(double value);
+// std::string to_string(const char* value);
 std::vector<std::string> split(const std::string& str, char delimiter = ' ');
 
 // socket utility functions

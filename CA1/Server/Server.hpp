@@ -14,7 +14,7 @@
 
 #define ROLE_AIRLINE_STR "AIRLINE"
 #define ROLE_AIRLINE 1
-#define ROLE_COSTUMER_STR "COSTUMER"
+#define ROLE_COSTUMER_STR "CUSTOMER"
 #define ROLE_COSTUMER 2
 
 // Response Messages
@@ -59,7 +59,8 @@ private:
     // _____________ DISPATCHER sub FUNC. _____________
     int registerClient(shared_ptr<Client_info> new_client, string username, string password, string role);
     shared_ptr<User> findUser(string username, string password);
-    
+    void sendUdpPort(shared_ptr<Client_info> new_client);
+
     // _____________ CONNECTION FUNC. _____________
     
     // تابع برای دریافت پورت اختصاص داده‌شده به کلاینت

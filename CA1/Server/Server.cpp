@@ -60,7 +60,8 @@ void Server::handleLogin(shared_ptr<Client_info> client, const string &content)
     client->isLoggedIn = true;
     client->user = user;
 
-    send(client->client_fd, APPROVED_LOGIN_STR, strlen(APPROVED_LOGIN_STR), 0);    
+    sendUdpPort(client);
+    send(client->client_fd, APPROVED_LOGIN_STR, strlen(APPROVED_LOGIN_STR), 0); 
 }
 
 int Server::getAssignedPort(int client_fd)
@@ -137,7 +138,7 @@ int Server::HasValidRole(string role) {
     if (strcmp(role.c_str(), ROLE_AIRLINE_STR) == 0) {
         return ROLE_AIRLINE;
     }
-    if (strcmp(role.c_str(), ROLE_COSTUMER_STR) == 0) {
+    if (strcmp(role.c_str(), ROLE_CUSTOMER_STR) == 0) {
         return ROLE_COSTUMER;
     }
     return -1;
@@ -187,6 +188,30 @@ shared_ptr<User> Server::findUser(string username, string password)
     }
 
     return found_user;
+}
+
+void Server::sendUdpPort(shared_ptr<Client_info> client)
+{
+    std::string msg = "PORT: ";
+    if (client->user->role == ROLE_AIRLINE) {
+        msg += std::to_string(this->udpSocket.airLine.port) + " ";
+    } else if (client->user->role == ROLE_COSTUMER) {
+        msg += std::to_string(this->udpSocket.customer.port) + " ";
+    }
+    
+    
+    size_t totalSent = 0;
+    const char* data = msg.c_str();
+    size_t msgSize = msg.size();
+
+    while (totalSent < msgSize) {
+        ssize_t sent = send(client->client_fd, data + totalSent, msgSize - totalSent, 0);
+        if (sent <= 0) {
+            perror("send failed");
+            return;
+        }
+        totalSent += sent;
+    }
 }
 
 void Server::handleNewClient(int server_fd) {
@@ -294,9 +319,6 @@ void Server::handleClientMessages(fd_set& read_fds) {
                     // پاسخ به همان کلاینت
                     send(client->client_fd, "Received your message", 21, 0);
                 
-                    // Broadcast پیام از طریق UDP
-                    // handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr);
-                    // handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr);
                 }
 
                 ++it;
@@ -371,6 +393,10 @@ void Server::handleKeyboardInput(fd_set& read_fds) {
                     my_print("\n");
                 }
             }
+            if (strcmp(buffer, "udp\n") == 0) {
+                handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr, "BROADCAST: AIRLINE");
+                handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr, "BROADCAST: CUSTOMER");
+            }
         }
     }
 }
@@ -408,8 +434,7 @@ void Server::startServer() {
         // if (!start_flag) {
             handleClientMessages(read_fds);
         // }
-        // handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr, read_fds);
-        // handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr, read_fds);
+
 
     }
 }
