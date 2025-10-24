@@ -5,6 +5,9 @@
 #include "Client_info.hpp"
 #include "SeatMap.hpp"
 
+#define ERR_FLIGHT_ID_STR "ERROR FlightIDAlreadyExists"
+#define APPROVED_ADD_FLIGHT_STR "FLIGHT_ADDED OK"
+
 using namespace std;
 
 struct Flight
