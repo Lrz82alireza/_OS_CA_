@@ -10,6 +10,8 @@
 
 #define UDP_PORT 8081
 
+using namespace std;
+
 class Client
 {
 private:
@@ -46,7 +48,6 @@ public:
     void handleUserInput(int tcp_sock);
     bool handleTcpMessage(int tcp_sock);
     void handleUdpMessage(int udp_sock);
-
 
     void startClient();
 };

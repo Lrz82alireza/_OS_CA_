@@ -19,8 +19,8 @@ int main(int argc, char* argv[]) {
 void Server::handleRegister(shared_ptr<Client_info> client, const string &content)
 {
     vector<std::string> ss = split(content, ' ');
-    if (ss.size() < 3) {
-        send(client->client_fd, "ERR: Invalid REGISTER format", 28, 0);
+    if (ss.size() != 4) {
+        send(client->client_fd, "ERR: Invalid REGISTER format", strlen("ERR: Invalid REGISTER format"), 0);
         return;
     }
     string role = ss[1];
@@ -44,10 +44,23 @@ void Server::handleRegister(shared_ptr<Client_info> client, const string &conten
 void Server::handleLogin(shared_ptr<Client_info> client, const string &content)
 {
     vector<std::string> ss = split(content, ' ');
-    if (ss.size() < 2) {
-        send(client->client_fd, "ERR: Invalid REGISTER format", 28, 0);
+    if (ss.size() != 3) {
+        send(client->client_fd, "ERR: Invalid LOGIN format", strlen("ERR: Invalid LOGIN format"), 0);
         return;
     }
+
+    string username = ss[1];
+    string password = ss[2];
+
+    shared_ptr<User> user = findUser(username, password);
+    if (user == nullptr) {
+        send(client->client_fd, ERR_LOGIN_STR, strlen(ERR_LOGIN_STR), 0);
+        return;
+    }
+    client->isLoggedIn = true;
+    client->user = user;
+
+    send(client->client_fd, APPROVED_LOGIN_STR, strlen(APPROVED_LOGIN_STR), 0);    
 }
 
 int Server::getAssignedPort(int client_fd)
@@ -112,8 +125,8 @@ bool Server::receiveClientInfo(int client_fd, Client_info &new_client) {
 // _____________ Check Client Info _____________
 
 int Server::HasUniqueUsername(string username) {
-    for (int i = 0; i < clients.size(); i++) {
-        if (clients[i]->username == username) {
+    for (int i = 0; i < users.size(); i++) {
+        if (users[i]->username == username) {
             return -1;
         }
     }
@@ -130,7 +143,7 @@ int Server::HasValidRole(string role) {
     return -1;
 }
 
-int Server::checkClientInfo(Client_info new_client, string username, string role) {
+int Server::checkUserInfo(Client_info new_client, string username, string role) {
     if (HasUniqueUsername(username) == -1) {
         send(new_client.client_fd, ERR_USERNAME_STR, strlen(ERR_USERNAME_STR), 0);
         return -1;
@@ -143,30 +156,37 @@ int Server::checkClientInfo(Client_info new_client, string username, string role
     return res;
 }
 
-int Server::registerClient(shared_ptr<Client_info> new_client, string username, string password, string role_str) {
+int Server::registerClient(shared_ptr<Client_info> client, string username, string password, string role_str) {
     int role;
-    if ((role = checkClientInfo(*new_client, username, role_str)) == -1) {
+    if ((role = checkUserInfo(*client, username, role_str)) == -1) {
         return -1;
     }
 
-    shared_ptr<Client_info> updated_client;
+    shared_ptr<User> user = std::make_shared<User>(username, password, role);
     if (role == ROLE_AIRLINE) {
-        updated_client = std::make_shared<Airline>(*new_client);
+        user = std::make_shared<Airline>(*user);
+        role = ROLE_AIRLINE;
     } else if (role == ROLE_COSTUMER) {
-        updated_client = std::make_shared<Costumer>(*new_client);
+        user = std::make_shared<Costumer>(*user);
+        role = ROLE_COSTUMER;
     }   
 
-    // update vector
-    auto it = std::find(clients.begin(), clients.end(), new_client);
-    if (it != clients.end()) {
-        *it = updated_client;  
-    }
-
-    updated_client->role = role;
-    updated_client->username = username;
-    updated_client->password = password;
+    users.push_back(user);    
 
     return 1;
+}
+
+shared_ptr<User> Server::findUser(string username, string password)
+{
+    shared_ptr<User> found_user = nullptr;
+    for (const auto& user : users) {
+        if (user->username == username && user->password == password) {
+            found_user = user;
+            break;
+        }
+    }
+
+    return found_user;
 }
 
 void Server::handleNewClient(int server_fd) {
@@ -263,9 +283,11 @@ void Server::handleClientMessages(fd_set& read_fds) {
                     }
                 } else {                    
                     buffer[len] = '\0';
-                    my_print("[TCP] Client ");
-                    my_print(client->username.c_str());
-                    my_print(": ");
+                    my_print("[TCP] Client port: ");
+                    my_print(client->port);
+                    my_print(", fd: ");
+                    my_print(client->client_fd);
+                    my_print(", sent: ");
                     my_print(buffer);
                     my_print("\n");
                 
@@ -336,10 +358,17 @@ void Server::handleKeyboardInput(fd_set& read_fds) {
             if (strcmp(buffer, "clients\n") == 0) {
                 my_print("Clients: \n");
                 for (auto client : clients) {
-                    my_print(client->username.c_str());
+                    my_print(client->port);
                     my_print(" (");
-                    my_print(to_string(client->role).c_str());
+                    my_print(client->client_fd);
                     my_print(")\n");
+                }
+            }
+            if (strcmp(buffer, "users\n") == 0) {
+                my_print("Users: \n");
+                for (auto user : users) {
+                    my_print(user->username + " " + user->password + " " + to_string(user->role));
+                    my_print("\n");
                 }
             }
         }

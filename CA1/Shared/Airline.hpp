@@ -1,21 +1,17 @@
 #ifndef AIRLINE_HPP
 #define AIRLINE_HPP
 
-#include "Client_info.hpp"
+#include "User.hpp"
 
-class Airline : public Client_info
+class Airline : public User
 {
 private:
     /* data */
 public:
-    Airline(/* args */) {}
-    Airline(const Client_info& client) {
-        this->username = client.username;
-        this->password = client.password;
-        this->role = client.role;
-        this->port = client.port;
-        this->client_fd = client.client_fd;
-        this->isLoggedIn = client.isLoggedIn;
+    Airline(const User& User) {
+        this->username = User.username;
+        this->password = User.password;
+        this->role = User.role;
     }
     ~Airline() {}
 };

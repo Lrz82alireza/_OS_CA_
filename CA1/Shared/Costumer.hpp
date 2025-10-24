@@ -1,21 +1,17 @@
 #ifndef COSTUMER_HPP
 #define COSTUMER_HPP
 
-#include "Client_info.hpp"
+#include "User.hpp"
 
-class Costumer : public Client_info
+class Costumer : public User
 {
 private:
     /* data */
 public:
-    Costumer(/* args */) {}
-    Costumer(const Client_info& client) {
-        this->username = client.username;
-        this->password = client.password;
-        this->role = client.role;
-        this->port = client.port;
-        this->client_fd = client.client_fd;
-        this->isLoggedIn = client.isLoggedIn;
+    Costumer(const User& user) {
+        this->username = user.username;
+        this->password = user.password;
+        this->role = user.role;
     }
     ~Costumer() {}
 };

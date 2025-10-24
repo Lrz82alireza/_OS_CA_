@@ -113,6 +113,15 @@ bool Client::handleTcpMessage(int tcp_sock) {
     char buffer[1024];
     int len = recv(tcp_sock, buffer, sizeof(buffer) - 1, 0);
     if (len > 0) {
+        vector<string> parts = split(string(buffer, len));
+        if (parts[0] == "PORT:") {
+            this->port = stoi(parts[1]);
+            this->udp_sock = setupUdpSocket(port);
+            my_print("UDP socket set up on port ");
+            my_print(parts[1].c_str());
+            my_print("\n");
+            return true;
+        }
         buffer[len] = '\0';
         my_print("[TCP] Server: ");
         my_print(buffer);

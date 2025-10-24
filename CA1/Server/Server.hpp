@@ -4,6 +4,8 @@
 #include "SHARED.hpp"
 #include "SeatMap.hpp"
 #include "FlightManager.hpp"
+#include "User.hpp"
+#include "Client_info.hpp"
 
 #define BASE_PORT 5000
 
@@ -18,7 +20,10 @@
 // Response Messages
 #define APPROVED_REGISTER_STR "REGISTERED OK"
 #define ERR_USERNAME_STR "ERROR UsernameAlreadyExists"
-#define ERR_ROLE_STR "ERR: Invalid role."
+#define ERR_ROLE_STR "ERROR Invalid role"
+
+#define ERR_LOGIN_STR "ERROR UserNotFound"
+#define APPROVED_LOGIN_STR "LOGIN OK"
 
 #define SEATS_COLUMN_MAX_SIZE 26
 #define SEATS_ROW_MAX_SIZE 100
@@ -40,19 +45,21 @@ private:
     // bool start_flag = false;
     bool start_flag = true;
 
-    std::vector<std::shared_ptr<Client_info>>clients;
-    std::vector<std::shared_ptr<Airline>> airlines;
-    std::vector<std::shared_ptr<Costumer>> costumers;
-
+    std::vector<std::shared_ptr<Client_info>> clients;
+    std::vector<std::shared_ptr<User>> users;
+    
     std::shared_ptr<FlightManager> flightManager = nullptr;
-
+    
     map<int, function<void(shared_ptr<Client_info>, const string&)>> commandHandlers;
-
+    
     // _____________ DISPATCHER FUNC. _____________
     void handleRegister(shared_ptr<Client_info> client, const string& content);
     void handleLogin(shared_ptr<Client_info> client, const string& content);
-
-
+    
+    // _____________ DISPATCHER sub FUNC. _____________
+    int registerClient(shared_ptr<Client_info> new_client, string username, string password, string role);
+    shared_ptr<User> findUser(string username, string password);
+    
     // _____________ CONNECTION FUNC. _____________
     
     // تابع برای دریافت پورت اختصاص داده‌شده به کلاینت
@@ -81,10 +88,9 @@ private:
     // _____________ Check Client Info _____________
     int HasUniqueUsername(string username);
     int HasValidRole(string role);
-    int checkClientInfo(Client_info new_client, string username, string role);
+    int checkUserInfo(Client_info new_client, string username, string role);
     // _____________ Check Client Info _____________
 
-    int registerClient(shared_ptr<Client_info> new_client, string username, string password, string role);
     void handleNewClient(int server_fd);
 public:
     Server(int port) : stp_port(port), server_fd(-1) {
@@ -115,7 +121,7 @@ public:
         my_print("\n");
     
         // ایجاد FlightManager
-        this->flightManager = make_shared<FlightManager>(&airlines, &costumers, &udpSocket);
+        // this->flightManager = make_shared<FlightManager>(&airlines, &costumers, &udpSocket);
 
         // راه‌اندازی پردازش TCP و UDP
         startServer();

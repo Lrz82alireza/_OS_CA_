@@ -16,6 +16,13 @@
 void my_print(const char* str) {
     write(STDOUT_FILENO, str, strlen(str));
 }
+void my_print(const int str) {
+    std::string s = to_string(str);
+    write(STDOUT_FILENO, s.c_str(), s.length());
+}
+void my_print(const std::string& str) {
+    write(STDOUT_FILENO, str.c_str(), str.length());
+}
 
 // تبدیل عدد صحیح به رشته
 std::string to_string(int value) {
@@ -148,15 +155,6 @@ std::string extractType(const std::string& input) {
     return input.substr(0, spacePos);  // نوع پیام (type) رو استخراج کن
 }
 
-void sendMsgToTeam(Team* team, const std::string& msg) {
-    if (team->coder != nullptr) {
-        send(team->coder->client_fd, msg.c_str(), msg.length(), 0);
-    }
-    if (team->navigator != nullptr) {
-        send(team->navigator->client_fd, msg.c_str(), msg.length(), 0);
-    }
-}
-
 int createEvaluationSocket(const char* server_ip) {
     // ایجاد سوکت TCP
     int sock_fd = create_socket(false, false);
@@ -206,18 +204,6 @@ Message decodeMessage(const std::string& message) {
     msg.content = message;
     
     return msg;
-}
-
-Team* findTeamByClientName(const std::vector<Team*>& teams, const std::string& clientName) {
-    for (Team* team : teams) {
-        if (team->coder != nullptr && team->coder->username == clientName) {
-            return team;
-        }
-        if (team->navigator != nullptr && team->navigator->username == clientName) {
-            return team;
-        }
-    }
-    return nullptr;
 }
 
 // void handleClientDisconnection(std::set<int> assigned_ports, std::vector<Team *> &teams, std::vector<Client_info *> &clients, Client_info *client)

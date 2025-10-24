@@ -2,6 +2,7 @@
 #define FLIGHTMANAGER_HPP
 
 #include "SHARED.hpp"
+#include "Client_info.hpp"
 
 using namespace std;
 

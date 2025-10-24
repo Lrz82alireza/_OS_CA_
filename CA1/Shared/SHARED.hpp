@@ -63,14 +63,6 @@ struct Submission
     char code[2000] = "";
 };
 
-struct Team
-{
-    Client_info* coder = nullptr;
-    Client_info* navigator = nullptr;
-    float score[3] = {0, 0, 0};
-    State state;
-    Submission submission;
-};
 
 struct Message
 {
@@ -80,9 +72,11 @@ struct Message
 
 // string utility functions
 void my_print(const char* str);
-// std::string to_string(int value);
-// std::string to_string(double value);
-// std::string to_string(const char* value);
+void my_print(const int str);
+void my_print(const std::string& str);
+std::string to_string(int value);
+std::string to_string(double value);
+std::string to_string(const char* value);
 std::vector<std::string> split(const std::string& str, char delimiter = ' ');
 
 // socket utility functions
@@ -93,7 +87,6 @@ sockaddr_in makeBroadcastAddress(int port, const std::string& ip = "255.255.255.
 
 
 std::string extractType(const std::string& input);
-void sendMsgToTeam(Team* team, const std::string& msg);
 
 int createEvaluationSocket(const char* server_ip);
 
@@ -101,7 +94,7 @@ void read_line(std::string& input);
 Message decodeMessage(const std::string& message);
 
 
-void handleClientDisconnection(std::set<int> assigned_ports, std::vector<Team *> &teams, std::vector<Client_info *> &clients, Client_info *client);
+// void handleClientDisconnection(std::set<int> assigned_ports, std::vector<Team *> &teams, std::vector<Client_info *> &clients, Client_info *client);
 void closeClientConnection(std::set<int> assigned_ports, int client_fd, int port);
 
 // Client_info * handleClientReconnection(std::vector<Team *> &teams, std::vector<Client_info *> &clients, Client_info *client);

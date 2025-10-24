@@ -1,19 +1,18 @@
 #ifndef CLIENT_INFO_HPP
 #define CLIENT_INFO_HPP
 
-#include <string>
+#include "User.hpp"
+#include <memory>
 
 class Client_info
 {
 private:
     /* data */
 public:
-    std::string username;
-    std::string password;
-    int role;
     int port = -1;
     int client_fd;
     bool isLoggedIn;
+    std::shared_ptr<User> user = nullptr;
 
     Client_info(/* args */) {
         this->isLoggedIn = false;
