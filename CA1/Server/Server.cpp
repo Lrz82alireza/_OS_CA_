@@ -37,10 +37,17 @@ void Server::handleRegister(shared_ptr<Client_info> client, const string &conten
     my_print(" with role ");
     my_print(role.c_str());
     my_print(" registered successfully.\n");
+
+    handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr, "BROADCAST NEW_USER " + username + " " + role + " \n");
 }
 
 void Server::handleLogin(shared_ptr<Client_info> client, const string &content)
 {
+    vector<std::string> ss = split(content, ' ');
+    if (ss.size() < 2) {
+        send(client->client_fd, "ERR: Invalid REGISTER format", 28, 0);
+        return;
+    }
 }
 
 int Server::getAssignedPort(int client_fd)
@@ -266,8 +273,8 @@ void Server::handleClientMessages(fd_set& read_fds) {
                     send(client->client_fd, "Received your message", 21, 0);
                 
                     // Broadcast پیام از طریق UDP
-                    handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr);
-                    handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr);
+                    // handleUdpBroadcast(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr);
+                    // handleUdpBroadcast(this->udpSocket.customer.fd, this->udpSocket.customer.addr);
                 }
 
                 ++it;
@@ -297,9 +304,8 @@ void Server::handleLoggedInMessages(shared_ptr<Client_info> client_info, const c
 {
 }
 
-void Server::handleUdpBroadcast(int socket_fd, const sockaddr_in& addr) {
-    const char* message = "Hello to all clients!";
-    int sent = sendto(socket_fd, message, strlen(message), 0,
+void Server::handleUdpBroadcast(int socket_fd, const sockaddr_in& addr, std::string message) {
+    int sent = sendto(socket_fd, message.c_str(), message.length(), 0,
                       (const sockaddr*)&addr, sizeof(addr));
     if (sent < 0)
         perror("sendto failed");

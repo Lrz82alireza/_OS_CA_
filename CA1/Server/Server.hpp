@@ -71,7 +71,7 @@ private:
     // _____________ توابع کمکی _____________
     void prepareFdSetForServer(fd_set& read_fds, int& max_fd);
     void handleNewConnections(fd_set& read_fds);
-    void handleUdpBroadcast(int socket_fd, const sockaddr_in& addr);
+    void handleUdpBroadcast(int socket_fd, const sockaddr_in& addr, std::string message);
     void handleKeyboardInput(fd_set &read_fds);
 
     void handleClientMessages(fd_set& read_fds);

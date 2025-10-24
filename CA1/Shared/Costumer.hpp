@@ -10,9 +10,12 @@ private:
 public:
     Costumer(/* args */) {}
     Costumer(const Client_info& client) {
-        this->role = client.role;
         this->username = client.username;
         this->password = client.password;
+        this->role = client.role;
+        this->port = client.port;
+        this->client_fd = client.client_fd;
+        this->isLoggedIn = client.isLoggedIn;
     }
     ~Costumer() {}
 };
