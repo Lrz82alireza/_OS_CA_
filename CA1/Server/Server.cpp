@@ -334,7 +334,7 @@ void Server::handleClientMessages(fd_set& read_fds) {
                 ++it;
             } else {
                 // client disconnection
-                // handleClientDisconnection(assigned_ports, teams, clients, *it);
+                // handleClientDisconnection(assigned_ports, clients, *it);
             }
         } else {
             ++it;

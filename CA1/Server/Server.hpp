@@ -29,15 +29,14 @@
 
 static volatile sig_atomic_t g_tick = 0;
 
-std::set<int> assigned_ports;
-
 using namespace std;
 
 class Server
 {
 private:
     UdpSocket udpSocket;
-
+    std::set<int> assigned_ports;
+    
     int server_fd;
     int stp_port;
 
@@ -123,6 +122,8 @@ public:
     
         // ایجاد FlightManager
         this->flightManager = make_shared<FlightManager>(&users, &udpSocket);
+
+        installAlarm();
 
         // راه‌اندازی پردازش TCP و UDP
         startServer();

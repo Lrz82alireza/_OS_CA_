@@ -227,27 +227,21 @@ Message decodeMessage(const std::string& message) {
     return msg;
 }
 
-// void handleClientDisconnection(std::set<int> assigned_ports, std::vector<Team *> &teams, std::vector<Client_info *> &clients, Client_info *client)
-// {
-//     my_print("Client disconnected.\n");
-//     closeClientConnection(assigned_ports, client->client_fd, client->port);
 
-//     Team *team = findTeamByClientName(teams, client->username);
-//     // Client_info *partner = findPartnerInTeam(team, client->username);
-//     if (partner != nullptr) {
-//         std::string msg = "Your teammate disconnected.\n";
-//         send(partner->client_fd, msg.c_str(), strlen(msg.c_str()), 0);
-//     }
+void handleClientDisconnection(std::set<int> &assigned_ports, std::vector<shared_ptr<Client_info>> &clients, shared_ptr<Client_info> client)
+{
+    my_print("Client disconnected.\n");
+    closeClientConnection(assigned_ports, client->client_fd, client->port);
 
-//     // erase from clients
-//     auto it = std::find(clients.begin(), clients.end(), client);
-//     if (it != clients.end()) {
-//         clients.erase(it);
-//     }
-// }
+    // erase from clients
+    auto it = std::find(clients.begin(), clients.end(), client);
+    if (it != clients.end()) {
+        clients.erase(it);
+    }
+}
 
 // تابع برای بستن اتصال اولیه با کلاینت
-void closeClientConnection(std::set<int> assigned_ports, int client_fd, int port) {
+void closeClientConnection(std::set<int> &assigned_ports, int client_fd, int port) {
     assigned_ports.erase(port);
     shutdown(client_fd, SHUT_RDWR);
     close(client_fd);

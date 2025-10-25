@@ -6,6 +6,7 @@
 #include "Airline.hpp"
 #include "Customer.hpp"
 #include "SeatMap.hpp"
+#include "Client_info.hpp"
 
 #include <map>
 #include <functional>
@@ -100,8 +101,8 @@ void read_line(std::string& input);
 Message decodeMessage(const std::string& message);
 
 
-// void handleClientDisconnection(std::set<int> assigned_ports, std::vector<Team *> &teams, std::vector<Client_info *> &clients, Client_info *client);
-void closeClientConnection(std::set<int> assigned_ports, int client_fd, int port);
+void handleClientDisconnection(std::set<int> &assigned_ports, std::vector<shared_ptr<Client_info>> &clients, shared_ptr<Client_info> client);
+void closeClientConnection(std::set<int> &assigned_ports, int client_fd, int port);
 
 // Client_info * handleClientReconnection(std::vector<Team *> &teams, std::vector<Client_info *> &clients, Client_info *client);
 
