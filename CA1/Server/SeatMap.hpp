@@ -13,10 +13,15 @@ private:
     vector<vector<bool>> seats;
     int freeSeatsCounter;
 
+    std::pair<int, int> parseSeatLabel(const std::string& seat);
+
 public:
     SeatMap(int r = 0, int c = 0);
     ~SeatMap();
 
+    int setReserves(vector<string> reserves);
+    int releaseReserves(vector<string> reserves);
+    bool reserve(vector<vector<bool>>& seats_, int row, int col);
     bool reserve(int row, int col);
     bool release(int row, int col);
 

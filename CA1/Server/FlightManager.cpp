@@ -2,7 +2,9 @@
 
 void FlightManager::handleAddFlight(shared_ptr<Client_info> client, const string &content)
 {
-    checkRolePermission(client, ROLE_AIRLINE);
+    if (!checkRolePermission(client, ROLE_AIRLINE)) {
+        return;
+    }
     vector<string> ss = split(content, ' ');
     if (ss.size() != 7) {
         send(client->client_fd, "ERR: Invalid ADD_FLIGHT format", strlen("ERR: Invalid ADD_FLIGHT format"), 0);
@@ -26,6 +28,40 @@ void FlightManager::handleAddFlight(shared_ptr<Client_info> client, const string
 
     string broadcast_msg = "BROADCAST NEW_FLIGHT " + new_flight.flight_id + " " + new_flight.origin + " " + new_flight.destination + " " + new_flight.time + "\n";
     sendBroadcastMessage(udpSocket->customer.fd, udpSocket->customer.addr, broadcast_msg);
+}
+
+void FlightManager::handleReserve(shared_ptr<Client_info> client, const string &content)
+{
+    if (!checkRolePermission(client, ROLE_CUSTOMER)) {
+        return;
+    }
+    vector<string> ss = split(content, ' ');
+    if (ss.size() >= 3) {
+        send(client->client_fd, "ERR: Invalid RESERVE format", strlen("ERR: Invalid RESERVE format"), 0);
+        return;
+    }
+
+    Reservation res(ss[1], client->getUserName(), std::vector<std::string>(ss.begin() + 2, ss.end()));
+
+    shared_ptr<Flight> flight = findFlightById(flights, ss[1]);
+    if (flight == nullptr) {
+        send(client->client_fd, "ERR: Invalid Flight ID", strlen("ERR: Invalid Flight ID"), 0);
+        return;
+    }
+
+    int temp_res = flight->seatMap.setReserves(res.seats);
+    if (temp_res == -1) {
+        send(client->client_fd, "ERR: Invalid Seat Label", strlen("ERR: Invalid Seat Label"), 0);
+        return;
+    } else if (temp_res == -2) {
+        send(client->client_fd, "ERR: Seat Already Reserved", strlen("ERR: Seat Already Reserved"), 0);
+        return;
+    }
+
+    reservations.push_back(make_shared<Reservation>(res));
+    string msg = "RESERVED TEMP " + to_string(res.reservation_id) + " EXPIRE_IN " + to_string(EXPIRE_TIME) + "\n";
+    send(client->client_fd, msg.c_str(), msg.length(), 0);
+    
 }
 
 void FlightManager::handleListFlights(shared_ptr<Client_info> client, const string &content)
@@ -77,5 +113,25 @@ void FlightManager::handleMessage(shared_ptr<Client_info> client_info, const cha
     } else {
         // my_print("Unknown command type.\n");
         send(client_info->client_fd, "ERR: Invalid message type", 21, 0);
+    }
+}
+
+void FlightManager::expireTemporaryReservations()
+{
+    time_t current_time = time(nullptr);
+    for (auto it = reservations.begin(); it != reservations.end(); ) {
+        shared_ptr<Reservation> res = *it;
+        if (res->status == TEMPORARY) {
+            double elapsed = difftime(current_time, res->timestamp);
+            if (elapsed >= EXPIRE_TIME) {
+                // Release seats
+                shared_ptr<Flight> flight = findFlightById(flights, res->flight_id);
+                if (flight != nullptr) {
+                    flight->seatMap.releaseReserves(res->seats);
+                }
+                res->status = EXPIRED;
+            }
+        } 
+        ++it;
     }
 }

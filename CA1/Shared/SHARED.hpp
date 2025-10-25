@@ -5,6 +5,7 @@
 
 #include "Airline.hpp"
 #include "Customer.hpp"
+#include "SeatMap.hpp"
 
 #include <map>
 #include <functional>
@@ -33,6 +34,7 @@
 #define RESERVE_STR "RESERVE"
 #define CONFIRM_STR "CONFIRM"
 #define LIST_FLIGHTS_STR "LIST_FLIGHTS"
+#define CANCEL_STR "CANCEL"
 
 #define REGISTER_N 1
 #define LOGIN_N 2
@@ -40,6 +42,9 @@
 #define RESERVE_N 4
 #define CONFIRM_N 5
 #define LIST_FLIGHTS_N 6
+#define CANCEL_N 7
+
+using namespace std;
 
 struct UdpChannel {
     int fd;
@@ -52,17 +57,13 @@ struct UdpSocket {
     UdpChannel customer;
 };
 
-struct State
+struct Flight
 {
-    bool submitted[3] = {false, false, false};
-    int time_submitted[3] = {0, 0, 0};
-};
-
-struct Submission
-{
-    char team_name[50] = "";
-    char problem_id[20] = "";
-    char code[2000] = "";
+    string flight_id;
+    string origin;
+    string destination;
+    string time;
+    SeatMap seatMap;
 };
 
 
@@ -103,4 +104,8 @@ Message decodeMessage(const std::string& message);
 void closeClientConnection(std::set<int> assigned_ports, int client_fd, int port);
 
 // Client_info * handleClientReconnection(std::vector<Team *> &teams, std::vector<Client_info *> &clients, Client_info *client);
+
+
+std::shared_ptr<Flight> findFlightById(const std::vector<std::shared_ptr<Flight>>& flights, const std::string& flight_id);
+
 #endif // SHARED_HPP

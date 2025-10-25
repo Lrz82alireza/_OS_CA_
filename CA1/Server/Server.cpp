@@ -214,6 +214,16 @@ void Server::sendUdpPort(shared_ptr<Client_info> client)
     }
 }
 
+void Server::installAlarm() {
+    struct sigaction sa{};
+    sa.sa_handler = alarm_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART; 
+
+    sigaction(SIGALRM, &sa, nullptr);
+    alarm(1);
+}
+
 void Server::handleNewClient(int server_fd) {
     // پذیرش اتصال اولیه
     int client_fd = acceptNewClient(server_fd);
@@ -439,6 +449,10 @@ void Server::startServer() {
             handleClientMessages(read_fds);
         // }
 
-
+        if (g_tick) {
+            g_tick = 0;
+            flightManager->expireTemporaryReservations();
+            alarm(1);
+        }
     }
 }

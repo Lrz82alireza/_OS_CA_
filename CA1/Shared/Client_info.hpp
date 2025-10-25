@@ -16,6 +16,8 @@ public:
     Client_info(/* args */) {
     }
     ~Client_info() {}
+
+    std::string getUserName();
 };
 
 

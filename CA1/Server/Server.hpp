@@ -6,6 +6,8 @@
 #include "FlightManager.hpp"
 #include "User.hpp"
 #include "Client_info.hpp"
+#include <signal.h>
+#include <atomic>
 
 #define BASE_PORT 5000
 
@@ -24,6 +26,8 @@
 #define SEATS_ROW_MAX_SIZE 100
 
 #define START_STR "start"
+
+static volatile sig_atomic_t g_tick = 0;
 
 std::set<int> assigned_ports;
 
@@ -56,6 +60,8 @@ private:
     shared_ptr<User> findUser(string username, string password);
     void sendUdpPort(shared_ptr<Client_info> new_client);
 
+    void Server::installAlarm();
+    static void alarm_handler(int) { g_tick = 1; }
     // _____________ CONNECTION FUNC. _____________
     
     // تابع برای دریافت پورت اختصاص داده‌شده به کلاینت

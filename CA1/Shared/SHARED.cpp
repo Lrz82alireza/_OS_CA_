@@ -208,6 +208,8 @@ Message decodeMessage(const std::string& message) {
         msg.type = CONFIRM_N;
     } else if (type == LIST_FLIGHTS_STR) {
         msg.type = LIST_FLIGHTS_N;
+    } else if (type == CANCEL_STR) {
+        msg.type = CANCEL_N;
     }
     msg.content = message;
     
@@ -240,6 +242,13 @@ void closeClientConnection(std::set<int> assigned_ports, int client_fd, int port
     close(client_fd);
 }
 
+std::shared_ptr<Flight> findFlightById(const std::vector<std::shared_ptr<Flight>>& flights, const std::string& flight_id) {
+    for (const auto& f : flights) {
+        if (f && f->flight_id == flight_id)
+            return f;
+    }
+    return nullptr;
+}
 // Client_info * handleClientReconnection(std::vector<Team *> &teams, std::vector<Client_info *> &clients, Client_info *client)
 // {
 //     Team *team = findTeamByClientName(teams, client->username);
