@@ -83,7 +83,10 @@ void FlightManager::handleConfirm(shared_ptr<Client_info> client, const string &
         send(client->client_fd, "ERR: Invalid Reservation ID", strlen("ERR: Invalid Reservation ID"), 0);
         return;
     }
-    if (res->status != TEMPORARY) {
+    if (res->status == EXPIRED) {
+        send(client->client_fd, ERR_CONFIRM_STR, strlen(ERR_CONFIRM_STR), 0);
+        return;
+    } else if (res->status != TEMPORARY) {
         send(client->client_fd, "ERR: Reservation Not Temporary", strlen("ERR: Reservation Not Temporary"), 0);
         return;
     }

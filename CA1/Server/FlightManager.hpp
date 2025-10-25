@@ -6,6 +6,7 @@
 #include "SeatMap.hpp"
 
 #define ERR_FLIGHT_ID_STR "ERROR FlightIDAlreadyExists"
+#define ERR_CONFIRM_STR "ERROR ReservationExpired"
 #define APPROVED_ADD_FLIGHT_STR "FLIGHT_ADDED OK"
 #define APPROVED_CONFIRM_STR "CONFIRMATION OK"
 #define APPROVED_CANCEL_STR "CANCELLED OK"

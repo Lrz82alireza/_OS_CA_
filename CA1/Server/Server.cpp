@@ -334,7 +334,7 @@ void Server::handleClientMessages(fd_set& read_fds) {
                 ++it;
             } else {
                 // client disconnection
-                // handleClientDisconnection(assigned_ports, clients, *it);
+                handleClientDisconnection(assigned_ports, clients, *it);
             }
         } else {
             ++it;
@@ -436,11 +436,17 @@ void Server::startServer() {
         timeout.tv_usec = 1000000; // 0.5 ثانیه
 
         int activity = select(max_fd + 1, &read_fds, NULL, NULL, &timeout);
+    
         if (activity < 0) {
+            if (errno == EINTR) {
+                continue; 
+            }
+            
             my_print("select() failed");
+            perror(" (select error)"); 
             break;
         }
-    
+
         // I/O Processing
         handleKeyboardInput(read_fds);
     
