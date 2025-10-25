@@ -52,9 +52,20 @@ std::vector<std::string> split(const std::string& str, char delimiter) {
     std::string token;
 
     while (std::getline(ss, token, delimiter)) {
-        result.push_back(token);
+        token.erase(std::remove(token.begin(), token.end(), '\r'), token.end());
+        token.erase(std::remove(token.begin(), token.end(), '\n'), token.end());
+
+        if (!token.empty())
+            result.push_back(token);
     }
-    
+
+    if (result.empty() && !str.empty()) {
+        std::string clean = str;
+        clean.erase(std::remove(clean.begin(), clean.end(), '\r'), clean.end());
+        clean.erase(std::remove(clean.begin(), clean.end(), '\n'), clean.end());
+        result.push_back(clean);
+    }
+
     return result;
 }
 
@@ -189,11 +200,11 @@ void read_line(std::string& input) {
 }
 
 Message decodeMessage(const std::string& message) {
-    std::vector<std::string> parts = split(message);
+    std::vector<std::string> parts = split(message, ' ');
     if (parts.empty()) {
         return {-1, ""};
     }
-    std::string type = split(message)[0];
+    std::string type = split(message, ' ')[0];
     Message msg = {-1, ""};
     
     if (type == REGISTER_STR) {

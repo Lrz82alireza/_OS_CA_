@@ -1,28 +1,37 @@
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -IShared
+CXXFLAGS = -std=c++11 -Wall -IShared -IServer
 
-SRC_SERVER = $(wildcard Server/*.cpp Shared/*.cpp)
-SRC_CLIENT = $(wildcard Client/*.cpp Shared/*.cpp)
+# --- سورس‌ها ---
+SRC_SERVER = $(wildcard Server/*.cpp) $(wildcard Shared/*.cpp)
+SRC_CLIENT = $(wildcard Client/*.cpp) $(wildcard Shared/*.cpp)
 
+# --- آبجکت‌ها ---
 OBJ_SERVER = $(SRC_SERVER:.cpp=.o)
 OBJ_CLIENT = $(SRC_CLIENT:.cpp=.o)
 
+# --- خروجی‌ها ---
 BIN_SERVER = Server/Server.out
 BIN_CLIENT = Client/Client.out
 
+# --- هدف پیش‌فرض ---
 all: $(BIN_SERVER) $(BIN_CLIENT)
 
+# --- لینک سرور ---
 $(BIN_SERVER): $(OBJ_SERVER)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJ_SERVER)
 
+# --- لینک کلاینت ---
 $(BIN_CLIENT): $(OBJ_CLIENT)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJ_CLIENT)
 
+# --- قانون عمومی ساخت فایل‌های .o از .cpp ---
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# --- پاک کردن فایل‌های موقتی ---
 clean:
-	rm -f $(OBJ_SERVER) $(OBJ_CLIENT) $(BIN_SERVER) $(BIN_CLIENT)
+	rm -f Server/*.o Client/*.o Shared/*.o $(BIN_SERVER) $(BIN_CLIENT)
+
 
 # اجرای کلاینت و سرور در tmux
 run: all

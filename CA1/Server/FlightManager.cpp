@@ -1,5 +1,7 @@
 #include "FlightManager.hpp"
 
+int Reservation::count_id = 0;
+
 void FlightManager::handleAddFlight(shared_ptr<Client_info> client, const string &content)
 {
     if (!checkRolePermission(client, ROLE_AIRLINE)) {
@@ -36,7 +38,7 @@ void FlightManager::handleReserve(shared_ptr<Client_info> client, const string &
         return;
     }
     vector<string> ss = split(content, ' ');
-    if (ss.size() >= 3) {
+    if (ss.size() <= 2) {
         send(client->client_fd, "ERR: Invalid RESERVE format", strlen("ERR: Invalid RESERVE format"), 0);
         return;
     }
@@ -64,9 +66,63 @@ void FlightManager::handleReserve(shared_ptr<Client_info> client, const string &
     
 }
 
+void FlightManager::handleConfirm(shared_ptr<Client_info> client, const string &content)
+{
+    if (!checkRolePermission(client, ROLE_CUSTOMER)) {
+        return;
+    }
+    vector<string> ss = split(content, ' ');
+    if (ss.size() != 2) {
+        send(client->client_fd, "ERR: Invalid CONFIRM format", strlen("ERR: Invalid CONFIRM format"), 0);
+        return;
+    }
+
+    int reservation_id = stoi(ss[1]);
+    shared_ptr<Reservation> res = findReservationById(reservation_id);
+    if (res == nullptr || res->username != client->getUserName()) {
+        send(client->client_fd, "ERR: Invalid Reservation ID", strlen("ERR: Invalid Reservation ID"), 0);
+        return;
+    }
+    if (res->status != TEMPORARY) {
+        send(client->client_fd, "ERR: Reservation Not Temporary", strlen("ERR: Reservation Not Temporary"), 0);
+        return;
+    }
+    res->status = CONFIRMED;
+    send(client->client_fd, APPROVED_CONFIRM_STR, strlen(APPROVED_CONFIRM_STR), 0);
+}
+
+void FlightManager::handleCancel(shared_ptr<Client_info> client, const string &content)
+{
+    if (!checkRolePermission(client, ROLE_CUSTOMER)) {
+        return;
+    }
+    vector<string> ss = split(content, ' ');
+    if (ss.size() != 2) {
+        send(client->client_fd, "ERR: Invalid CANCEL format", strlen("ERR: Invalid CANCEL format"), 0);
+        return;
+    }
+
+    int reservation_id = stoi(ss[1]);
+    shared_ptr<Reservation> res = findReservationById(reservation_id);
+    if (res == nullptr || res->username != client->getUserName()) {
+        send(client->client_fd, "ERR: Invalid Reservation ID", strlen("ERR: Invalid Reservation ID"), 0);
+        return;
+    }
+    if (res->status == EXPIRED) {
+        send(client->client_fd, "ERR: Reservation Already Expired", strlen("ERR: Reservation Already Expired"), 0);
+        return;
+    }
+    shared_ptr<Flight> flight = findFlightById(flights, res->flight_id);
+    if (flight != nullptr) {
+        flight->seatMap.releaseReserves(res->seats);
+    }
+    res->status = EXPIRED;
+    send(client->client_fd, APPROVED_CANCEL_STR, strlen(APPROVED_CANCEL_STR), 0);
+}
+
 void FlightManager::handleListFlights(shared_ptr<Client_info> client, const string &content)
 {
-    string msg = "";
+    string msg = "\n";
     for (const auto& flight : flights) {
         int max_seats = flight->seatMap.getRows() * flight->seatMap.getCols();
         msg += "FLIGHT " + flight->flight_id + " " + flight->origin + " " + flight->destination + " " 
@@ -96,6 +152,16 @@ bool FlightManager::checkRolePermission(shared_ptr<Client_info> client, int requ
         return false;
     }
     return true;
+}
+
+shared_ptr<Reservation> FlightManager::findReservationById(int reservation_id)
+{
+    for (const auto& res : reservations) {
+        if (res->reservation_id == reservation_id) {
+            return res;
+        }
+    }
+    return nullptr;
 }
 
 void FlightManager::handleMessage(shared_ptr<Client_info> client_info, const char *buffer, int len)

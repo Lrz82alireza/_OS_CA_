@@ -39,7 +39,7 @@ void Server::handleRegister(shared_ptr<Client_info> client, const string &conten
     my_print(" registered successfully.\n");
 
     sendBroadcastMessage(this->udpSocket.airLine.fd, this->udpSocket.airLine.addr, "BROADCAST NEW_USER " + username + " " + role + " \n");
-    sendBroadcastMessage(this->udpSocket.customer.fd, this->udpSocket.customer.addr, "BROADCAST NEW_USER " + username + " " + role + " \n");
+    // sendBroadcastMessage(this->udpSocket.customer.fd, this->udpSocket.customer.addr, "BROADCAST NEW_USER " + username + " " + role + " \n");
 }
 
 void Server::handleLogin(shared_ptr<Client_info> client, const string &content)

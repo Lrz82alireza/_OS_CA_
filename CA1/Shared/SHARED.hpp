@@ -80,7 +80,7 @@ void my_print(const std::string& str);
 // std::string to_string(int value);
 // std::string to_string(double value);
 // std::string to_string(const char* value);
-std::vector<std::string> split(const std::string& str, char delimiter = ' ');
+std::vector<std::string> split(const std::string& str, char delimiter);
 
 // send Message
 void sendBroadcastMessage(int socket_fd, const sockaddr_in& addr, std::string message);

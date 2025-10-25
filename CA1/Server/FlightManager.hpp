@@ -7,6 +7,8 @@
 
 #define ERR_FLIGHT_ID_STR "ERROR FlightIDAlreadyExists"
 #define APPROVED_ADD_FLIGHT_STR "FLIGHT_ADDED OK"
+#define APPROVED_CONFIRM_STR "CONFIRMATION OK"
+#define APPROVED_CANCEL_STR "CANCELLED OK"
 
 #define TEMPORARY "TEMPORARY"
 #define CONFIRMED "CONFIRMED"
@@ -37,7 +39,7 @@ struct Reservation {
         reservation_id = count_id++;
     }
 };
-int Reservation::count_id = 0;
+
 
 
 class FlightManager
@@ -64,8 +66,7 @@ private:
     bool checkRolePermission(shared_ptr<Client_info> client, int required_role);
 
     // ___________ H-Func. _____________
-    
-
+    shared_ptr<Reservation> findReservationById(int reservation_id);
 public:
     FlightManager(vector<shared_ptr<User>>* users, UdpSocket *udpSocket) 
         :users(users), udpSocket(udpSocket) {

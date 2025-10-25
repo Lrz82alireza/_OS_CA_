@@ -60,7 +60,7 @@ private:
     shared_ptr<User> findUser(string username, string password);
     void sendUdpPort(shared_ptr<Client_info> new_client);
 
-    void Server::installAlarm();
+    void installAlarm();
     static void alarm_handler(int) { g_tick = 1; }
     // _____________ CONNECTION FUNC. _____________
     
