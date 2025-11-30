@@ -56,7 +56,7 @@ private:
     void configureOutput(const Command& cmd, int current_pipe_write_fd);
     void runChildProcess(const Command& cmd, int prev_pipe_read_fd, int current_pipe_write_fd, int current_pipe_read_fd);
     void executePipeline(std::vector<Command>& pipeline);
-    
+
     // Handlers
     void handleEcho(const std::vector<std::string>& args);
     void handlePrintN(const std::vector<std::string>& args);

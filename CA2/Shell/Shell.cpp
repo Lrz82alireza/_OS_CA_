@@ -72,6 +72,13 @@ void Shell::processLine(const std::string& line) {
         pipeline.push_back(cmd);
     }
 
+    if (pipeline.empty()) return;
+
+    if (pipeline[0].name == "exit") {
+        running = false;
+        return; 
+    }
+
     // 3. Execute the pipeline
     // Here we will loop through 'pipeline', use fork(), pipe(), and dup2()
     // based on inputType and outputType of each command.
@@ -138,21 +145,30 @@ void Shell::handlePrintN(const std::vector<std::string>& args) {
 }
 
 void Shell::handleLen(const std::vector<std::string>& args) {
-    // Calculates the length of the string argument
-    // Based on project spec, it usually takes one string.
-    // If multiple args are given, we might need to join them or just take the first.
-    // Here we count the length of the first argument provided.
-    if (args.size() < 2) {
-         std::cout << 0 << std::endl;
-         return;
+    // Case 1: Argument provided (e.g., "len hello")
+    if (args.size() > 1) {
+        std::cout << args[1].length() << std::endl;
+        return;
     }
+
+    // Case 2: No argument provided, read from STDIN (Pipe mode)
+    // Example: "print_n 2 | len"
+    // We read the entire input from cin until EOF
+    std::string line;
+    std::string content;
     
-    std::cout << args[1].length() << std::endl;
+    // Read all lines from input (pipeline output)
+    while (std::getline(std::cin, line)) {
+        content += line;
+    }
+
+    // Simple implementation ignoring newline complications for now (counting content text):
+    std::cout << content.length() << std::endl;
 }
 
 void Shell::handleExit(const std::vector<std::string>& args) {
     // Stop the main loop
-    running = false;
+    this->running = false;
 }
 
 // Helper: Sets up input redirection (STDIN)

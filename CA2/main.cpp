@@ -34,7 +34,7 @@ int main() {
     // 3. Start the main loop
     myShell.run();
 
-    // unlink(FIFO_NAME.c_str());
+    unlink(FIFO_NAME.c_str());
 
     return 0;
 }
