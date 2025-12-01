@@ -96,7 +96,6 @@ Command Shell::parseCommand(std::string commandStr) {
             if (ss >> nextToken && nextToken == "np") {
                 cmd.outputType = IOType::NAMED_PIPE;
             }
-            // Note: Project says we don't need to support file writing, only np 
         } 
         else if (token == "<") {
             std::string nextToken;
@@ -120,11 +119,34 @@ Command Shell::parseCommand(std::string commandStr) {
 // --- Command Implementations ---
 
 void Shell::handleEcho(const std::vector<std::string>& args) {
-    // args[0] is "echo", so we print from args[1] onwards
-    for (size_t i = 1; i < args.size(); ++i) {
-        std::cout << args[i] << (i == args.size() - 1 ? "" : " ");
+    // Case 1: Standard echo with arguments
+    // Example: echo hello world
+    if (args.size() > 1) {
+        for (size_t i = 1; i < args.size(); ++i) {
+            std::cout << args[i] << (i == args.size() - 1 ? "" : " ");
+        }
+        std::cout << std::endl;
+        return;
     }
-    std::cout << std::endl;
+
+    // Case 2: No arguments provided.
+    // We need to distinguish between running in a pipe vs running standalone.
+    
+    // Check if STDIN is connected to a terminal (keyboard)
+    if (isatty(STDIN_FILENO)) {
+        // If it is a terminal, it means the user just typed "echo" without args.
+        // As requested, we show an error instead of hanging or printing a newline.
+        std::cerr << "Error: echo requires arguments or piped input." << std::endl;
+        return;
+    }
+
+    // Case 3: Input is NOT a terminal (it implies it's coming from a pipe or file redirection)
+    // Example: print_n 3 | echo | len
+    // Here echo acts as a pass-through (like cat)
+    char c;
+    while (std::cin.get(c)) {
+        std::cout << c;
+    }
 }
 
 void Shell::handlePrintN(const std::vector<std::string>& args) {
@@ -152,18 +174,16 @@ void Shell::handleLen(const std::vector<std::string>& args) {
     }
 
     // Case 2: No argument provided, read from STDIN (Pipe mode)
-    // Example: "print_n 2 | len"
-    // We read the entire input from cin until EOF
     std::string line;
-    std::string content;
+    long totalLength = 0;
     
-    // Read all lines from input (pipeline output)
-    while (std::getline(std::cin, line)) {
-        content += line;
+    char c;
+    while (std::cin.get(c)) {
+        if (c != 10)
+            totalLength++;
     }
 
-    // Simple implementation ignoring newline complications for now (counting content text):
-    std::cout << content.length() << std::endl;
+    std::cout << totalLength << std::endl;
 }
 
 void Shell::handleExit(const std::vector<std::string>& args) {
@@ -234,14 +254,18 @@ void Shell::runChildProcess(const Command& cmd, int prev_pipe_read_fd, int curre
 // Main execution loop
 void Shell::executePipeline(std::vector<Command>& pipeline) {
     int numCmds = pipeline.size();
-    int prev_pipe_read_fd = -1; 
+    int prev_pipe_read_fd = -1;
     int pipefd[2];
+    
+    // We store PIDs of children created in THIS specific pipeline
+    std::vector<pid_t> childPids;
+
+    bool isOutputToNamedPipe = (!pipeline.empty() && pipeline.back().outputType == IOType::NAMED_PIPE);
 
     for (int i = 0; i < numCmds; ++i) {
         Command& cmd = pipeline[i];
         bool needPipe = (cmd.outputType == IOType::PIPE);
 
-        // Create pipe if needed
         if (needPipe) {
             if (pipe(pipefd) == -1) {
                 perror("pipe failed");
@@ -260,21 +284,17 @@ void Shell::executePipeline(std::vector<Command>& pipeline) {
         }
 
         if (pid == 0) {
-            // CHILD PROCESS
+            // Child
             runChildProcess(cmd, prev_pipe_read_fd, pipefd[1], pipefd[0]);
         } else {
-            // PARENT PROCESS
-            
-            // Close the read end of the PREVIOUS pipe (child has it now)
+            // Parent
+            childPids.push_back(pid); // Store the PID
+
             if (prev_pipe_read_fd != -1) {
                 close(prev_pipe_read_fd);
             }
-
-            // Prepare for the next iteration
             if (needPipe) {
-                // Close write end (parent doesn't write)
-                close(pipefd[1]);
-                // Save read end for the next child
+                close(pipefd[1]); 
                 prev_pipe_read_fd = pipefd[0]; 
             } else {
                 prev_pipe_read_fd = -1;
@@ -282,8 +302,18 @@ void Shell::executePipeline(std::vector<Command>& pipeline) {
         }
     }
 
-    // Wait for all children to finish
-    for (int i = 0; i < numCmds; ++i) {
-        wait(NULL);
+    // Wait logic
+    if (!isOutputToNamedPipe) {
+        // Wait specifically for the PIDs created in this pipeline sequence
+        for (pid_t pid : childPids) {
+            // waitpid waits for a specific child process
+            int status;
+            waitpid(pid, &status, 0);
+        }
+    } else {
+        std::cout << "[Info] Command running in background (waiting for reader)..." << std::endl;
+        // Note: In a real shell, we would add these PIDs to a "jobs" list 
+        // to wait for them later or handle SIGCHLD. 
+        // Here we detach them effectively (from the shell's blocking perspective).
     }
 }
