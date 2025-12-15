@@ -202,8 +202,10 @@ void run_RR(vector<Process> procs, int quantum) {
     print_results(procs, "Round Robin (Q=" + to_string(quantum) + ")");
 }
 int main() {
-    int current_scenario_index = 1; 
-    int rr_quantum = 1;             
+    // initial values for testing
+    // current_scenario_index = {1, 2, 3}
+    int current_scenario_index = 2; 
+    int rr_quantum = 4;             
 
     vector<Process> selected_scenario;
 
