@@ -7,7 +7,7 @@
 
 using namespace std;
 
-#define DEFAULT_ARRAY_SIZE 100000
+#define DEFAULT_ARRAY_SIZE 10000000
 #define MAX_RAND_VAL 10 
 
 struct ThreadData {
